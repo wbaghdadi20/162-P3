@@ -105,7 +105,7 @@ body{
     position: absolute;
     top: 0;
     height: 100%;
-    transition: all 0.6s ease-in-out;
+    transition: all .8s ease-in-out;
 }
 
 .sign-in{
@@ -129,7 +129,7 @@ body{
     transform: translateX(100%);
     opacity: 1;
     z-index: 5;
-    animation: move 0.6s;
+    animation: move .8s;
 }
 
 @keyframes move{
@@ -165,7 +165,7 @@ body{
     width: 50%;
     height: 100%;
     overflow: hidden;
-    transition: all 0.6s ease-in-out;
+    transition: all .8s ease-in-out;
     border-radius: 150px 0 0 100px;
     z-index: 1000;
 }
@@ -185,7 +185,7 @@ body{
     height: 100%;
     width: 200%;
     transform: translateX(0);
-    transition: all 0.6s ease-in-out;
+    transition: all .8s ease-in-out;
 }
 
 .container.active .toggle{
@@ -204,7 +204,7 @@ body{
     text-align: center;
     top: 0;
     transform: translateX(0);
-    transition: all 0.6s ease-in-out;
+    transition: all .8s ease-in-out;
 }
 
 .toggle-left{
