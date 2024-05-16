@@ -1,7 +1,18 @@
 <div class="container-homepage">
-    <h1 class="homepage-title">Welcome to MicroBlog</h1>
-    
-    <div class="homepage-content">      
+    <h1 class="homepage-title">Welcome to BLOG IT</h1>
+
+    {{!-- Debugging user object --}}
+    {{#if user}}
+    <div class="debug">
+        <p>User is logged in: {{user.firstName}} {{user.lastName}}</p>
+    </div>
+    {{else}}
+    <div class="debug">
+        <p>No user is logged in.</p>
+    </div>
+    {{/if}}
+
+    <div class="homepage-content">
         {{!-- List of posts --}}
         <div class="posts-list">
             {{#each posts}}
@@ -9,12 +20,26 @@
             {{/each}}
         </div>
 
+        {{!-- Post form, shown only if user is logged in --}}
+        {{#if user}}
         <div class="post-form">
             <form action="/posts" method="POST">
                 <input type="text" name="title" placeholder="Post Title" required>
                 <textarea name="content" placeholder="Post Content" required></textarea>
                 <button type="submit">Create Post</button>
+                <button type="button" id="emoji-button">😊</button>
+                <div id="emoji-picker" class="emoji-picker"></div> <!-- Container for emoji picker -->
             </form>
         </div>
+        {{/if}}
     </div>
+
+    <br>
+    {{!-- Footer, shown only if user is not logged in --}}
+    {{#unless user}}
+    <footer>
+        <p><a href="/login">SIGN IN</a> to post!</p>
+    </footer>
+    {{/unless}}
+    <br>
 </div>

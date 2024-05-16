@@ -4,7 +4,8 @@ const session = require('express-session');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
-const { addUser, findUserByEmail } = require('./js/users');
+const { addUser, findUserByEmail } = require('./public/js/users');
+const Jimp = require('jimp');
 
 // Initialize Express app
 const app = express();
@@ -35,6 +36,14 @@ handlebars.registerHelper('ifCond', function(v1, v2, options) {
     return options.inverse(this);
 });
 
+handlebars.registerHelper('ifUserMatch', function(firstName, lastName, username, options) {
+    const fullName = `${firstName} ${lastName}`;
+    if (fullName === username) {
+        return options.fn(this);
+    }
+    return options.inverse(this);
+});
+
 handlebars.registerHelper('includes', function(array, value, options) {
     if (array && array.includes(value)) {
         return options.fn(this);
@@ -58,7 +67,7 @@ let posts = [
         title: 'Exploring Hidden Gems in Europe',
         content: 'Just got back from an incredible trip through Europe. Visited some lesser-known spots that are truly breathtaking!',
         username: 'TravelGuru',
-        timestamp: '2024-05-02 08:30',
+        timestamp: '5/2/2024, 08:30:10 AM',
         likes: 0,
         likedBy: [] // Array to keep track of users who liked the post
     },
@@ -67,7 +76,7 @@ let posts = [
         title: 'The Ultimate Guide to Homemade Pasta',
         content: 'Learned how to make pasta from scratch, and it’s easier than you think. Sharing my favorite recipes and tips.',
         username: 'FoodieFanatic',
-        timestamp: '2024-05-02 09:45',
+        timestamp: '5/2/2024, 09:11:11 AM',
         likes: 0,
         likedBy: [] // Array to keep track of users who liked the post
     }
@@ -75,10 +84,14 @@ let posts = [
 
 // Home page route
 app.get('/', (req, res) => {
+    // Sort posts by timestamp in descending order
+    const sortedPosts = posts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    console.log(`User data: ${JSON.stringify(req.session.user)}`);
+
     res.render('home', {
         title: 'Home',
         user: req.session.user,
-        posts: posts,
+        posts: sortedPosts,
         showNavBar: true,
         layout: 'main'
     });
@@ -130,6 +143,7 @@ app.post('/register', async (req, res) => {
 
         // Create a new user
         const newUser = { firstName, lastName, email, password: hashedPassword, createdAt: new Date().toLocaleString() };
+        console.log("New user created at: " + newUser.createdAt);
         addUser(newUser);
 
         // Redirect to login page
@@ -167,8 +181,10 @@ app.post('/login', async (req, res) => {
             id: user.email, 
             loggedIn: true, 
             firstName: user.firstName, 
-            lastName: user.lastName 
+            lastName: user.lastName,
+            createdAt: user.createdAt
         };
+        console.log(`User logged in: ${JSON.stringify(req.session.user)}`);
         res.redirect('/');
     } catch (err) {
         console.error(err);
@@ -193,8 +209,8 @@ app.post('/posts', isAuthenticated, (req, res) => {
         id: uuidv4(),
         title,
         content,
-        username: req.session.user.firstName,
-        timestamp: new Date().toISOString(),
+        username: `${req.session.user.firstName} ${req.session.user.lastName}`,
+        timestamp: new Date().toLocaleString(),
         likes: 0,
         likedBy: [] // Initialize likedBy array
     };
@@ -227,19 +243,52 @@ app.post('/like/:id', isAuthenticated, (req, res) => {
 // Delete a post
 app.post('/delete/:id', isAuthenticated, (req, res) => {
     const postId = req.params.id;
-    posts = posts.filter(p => p.id !== postId || p.username !== req.session.user.firstName);
+    const fullName = `${req.session.user.firstName} ${req.session.user.lastName}`;
+    console.log(`Attempting to delete post with ID: ${postId} by user: ${fullName}`);
+    posts = posts.filter(p => !(p.id === postId && p.username === fullName));
     res.redirect('/');
 });
 
+
 // Profile route
 app.get('/profile', isAuthenticated, (req, res) => {
-    const userPosts = posts.filter(post => post.username === req.session.user.firstName);
+    const fullName = `${req.session.user.firstName} ${req.session.user.lastName}`;
+    const userPosts = posts.filter(post => post.username === fullName);
+
+    console.log(`User data for profile: ${JSON.stringify(req.session.user)}`);
+
+
     res.render('profile', {
         title: 'Profile',
         user: req.session.user,
+        userPosts: userPosts,
         showNavBar: true,
-        layout: 'main',
-        userPosts
+        layout: 'main'
+    });
+});
+
+// Avatar generation endpoint
+app.get('/avatar/:username', async (req, res) => {
+    const { username } = req.params;
+    const firstLetter = username.charAt(0).toUpperCase();
+    const colors = ['#FFB6C1', '#ADD8E6', '#90EE90', '#FFA07A', '#20B2AA', '#87CEFA', '#778899', '#B0C4DE'];
+    const backgroundColor = colors[username.charCodeAt(0) % colors.length];
+
+    const image = new Jimp(200, 200, backgroundColor, (err, image) => {
+        if (err) throw err;
+    });
+
+    const font = await Jimp.loadFont(Jimp.FONT_SANS_128_WHITE);
+    image.print(font, 0, 0, {
+        text: firstLetter,
+        alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+        alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE
+    }, 200, 200);
+
+    image.getBuffer(Jimp.MIME_PNG, (err, buffer) => {
+        if (err) throw err;
+        res.setHeader('Content-Type', 'image/png');
+        res.send(buffer);
     });
 });
 

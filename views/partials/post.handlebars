@@ -1,22 +1,26 @@
 <div class="post">
     <div class="post-header">
+        <img src="/avatar/{{username}}" alt="{{username}}'s avatar" class="avatar">
         <h2>{{title}}</h2>
         <span class="post-author">by {{username}}</span>
     </div>
+    <br>
     <div class="post-content">
         <p>{{content}}</p>
     </div>
     <div class="post-footer">
         <span class="post-timestamp">{{timestamp}}</span>
-        {{!-- Show like or delete button based on the user --}}
-        {{#ifCond user.username username}}
-        <form action="/delete/{{id}}" method="POST">
-            <button type="submit">Delete</button>
-        </form>
-        {{else}}
+
+        {{!-- Show like button for all posts --}}
         <form action="/like/{{id}}" method="POST">
-            <button type="submit">Likes {{likes}}</button>
+            <button type="submit" class = "like-button" >Likes {{likes}}</button>
         </form>
-        {{/ifCond}}
+
+        {{!-- Show delete button if the post belongs to the logged-in user --}}
+        
+            <form action="/delete/{{id}}" method="POST">
+                <button type="submit"  class = "delete-button" >Delete</button>
+            </form>
+       
     </div>
 </div>

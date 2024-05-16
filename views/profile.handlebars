@@ -1,10 +1,13 @@
 <div class="container-profile">
-    <h1>{{user.firstName}} {{user.lastName}}'s Profile</h1>
+    <div class="profile-header">
+        <img src="/avatar/{{user.firstName}} {{user.lastName}}" alt="{{user.firstName}}'s avatar" class="avatar-profile">
+        <h1>{{user.firstName}} {{user.lastName}}'s Profile</h1>    
+    </div>
     <p>Member since: {{user.createdAt}}</p>
-    
+    <h3>Recent Posts:</h3>
     <div class="user-posts">
         {{#each userPosts}}
-        {{> post}}
+        {{> post user=user}}
         {{/each}}
     </div>
 </div>
