@@ -1,0 +1,22 @@
+<div class="post">
+    <div class="post-header">
+        <h2>{{title}}</h2>
+        <span class="post-author">by {{username}}</span>
+    </div>
+    <div class="post-content">
+        <p>{{content}}</p>
+    </div>
+    <div class="post-footer">
+        <span class="post-timestamp">{{timestamp}}</span>
+        {{!-- Show like or delete button based on the user --}}
+        {{#ifCond user.username username}}
+        <form action="/delete/{{id}}" method="POST">
+            <button type="submit">Delete</button>
+        </form>
+        {{else}}
+        <form action="/like/{{id}}" method="POST">
+            <button type="submit">Like ({{likes}})</button>
+        </form>
+        {{/ifCond}}
+    </div>
+</div>

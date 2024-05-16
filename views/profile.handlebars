@@ -1,0 +1,10 @@
+<div class="container-profile">
+    <h1>{{user.firstName}} {{user.lastName}}'s Profile</h1>
+    <p>Member since: {{user.createdAt}}</p>
+    
+    <div class="user-posts">
+        {{#each userPosts}}
+        {{> post}}
+        {{/each}}
+    </div>
+</div>

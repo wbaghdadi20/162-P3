@@ -12,8 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "canvas": "^2.11.2",
     "express": "^4.19.2",
     "express-handlebars": "^7.1.2",
-    "express-session": "^1.18.0"
+    "express-session": "^1.18.0",
+    "uuid": "^9.0.1"
   }
 }

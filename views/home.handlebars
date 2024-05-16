@@ -1,6 +1,23 @@
-{{!-- This template uses the main layout --}}
-{{!-- By default, Handlebars uses the layout defined in the layoutDir (views/layouts) --}}
 <div class="container-homepage">
-    <h1>Welcome to MicroBlog</h1>
-    {{!-- Add more content here as needed --}}    
+    <h1 class="homepage-title">Welcome to MicroBlog</h1>
+    
+    <div class="homepage-content">
+        {{!-- Post creation form for authenticated users --}}
+        {{#if user}}
+        <div class="post-form">
+            <form action="/posts" method="POST">
+                <input type="text" name="title" placeholder="Post Title" required>
+                <textarea name="content" placeholder="Post Content" required></textarea>
+                <button type="submit">Create Post</button>
+            </form>
+        </div>
+        {{/if}}
+        
+        {{!-- List of posts --}}
+        <div class="posts-list">
+            {{#each posts}}
+            {{> post}}
+            {{/each}}
+        </div>
+    </div>
 </div>

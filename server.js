@@ -3,7 +3,8 @@ const { engine } = require('express-handlebars');
 const session = require('express-session');
 const path = require('path');
 const bcrypt = require('bcrypt');
-const { addUser, findUserByEmail } = require('./js/users'); // Import the users module
+const { v4: uuidv4 } = require('uuid');
+const { addUser, findUserByEmail } = require('./js/users');
 
 // Initialize Express app
 const app = express();
@@ -25,6 +26,15 @@ app.use(session({
     saveUninitialized: true
 }));
 
+// Register custom Handlebars helper
+const handlebars = require('handlebars');
+handlebars.registerHelper('ifCond', function (v1, v2, options) {
+    if (v1 === v2) {
+        return options.fn(this);
+    }
+    return options.inverse(this);
+});
+
 // Middleware to check if user is authenticated
 const isAuthenticated = (req, res, next) => {
     if (req.session.user && req.session.user.loggedIn) {
@@ -34,35 +44,56 @@ const isAuthenticated = (req, res, next) => {
     }
 };
 
-// Define routes
+// Sample data
+let posts = [
+    {
+        id: uuidv4(),
+        title: 'Exploring Hidden Gems in Europe',
+        content: 'Just got back from an incredible trip through Europe. Visited some lesser-known spots that are truly breathtaking!',
+        username: 'TravelGuru',
+        timestamp: '2024-05-02 08:30',
+        likes: 0
+    },
+    {
+        id: uuidv4(),
+        title: 'The Ultimate Guide to Homemade Pasta',
+        content: 'Learned how to make pasta from scratch, and it’s easier than you think. Sharing my favorite recipes and tips.',
+        username: 'FoodieFanatic',
+        timestamp: '2024-05-02 09:45',
+        likes: 0
+    }
+];
+
+// Home page route
 app.get('/', (req, res) => {
     res.render('home', {
         title: 'Home',
         user: req.session.user,
+        posts: posts,
         showNavBar: true,
         layout: 'main'
     });
 });
 
+// Login page route
 app.get('/login', (req, res) => {
     res.render('loginRegister', {
         title: 'Login',
         formType: 'Login',
         isLogin: true,
-        user: req.session.user,
         showNavBar: false,
-        layout: 'main'
+        layout: false
     });
 });
 
+// Register page route
 app.get('/register', (req, res) => {
     res.render('loginRegister', {
         title: 'Register',
         formType: 'Register',
         isLogin: false,
-        user: req.session.user,
         showNavBar: false,
-        layout: 'main'
+        layout: false
     });
 });
 
@@ -141,11 +172,48 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// Example of a protected route
+// Create a new post
+app.post('/posts', isAuthenticated, (req, res) => {
+    const { title, content } = req.body;
+    const newPost = {
+        id: uuidv4(),
+        title,
+        content,
+        username: req.session.user.firstName,
+        timestamp: new Date().toISOString(),
+        likes: 0
+    };
+    posts.push(newPost);
+    res.redirect('/');
+});
+
+// Like a post
+app.post('/like/:id', isAuthenticated, (req, res) => {
+    const postId = req.params.id;
+    const post = posts.find(p => p.id === postId);
+    if (post && post.username !== req.session.user.firstName) {
+        post.likes++;
+    }
+    res.redirect('/');
+});
+
+// Delete a post
+app.post('/delete/:id', isAuthenticated, (req, res) => {
+    const postId = req.params.id;
+    posts = posts.filter(p => p.id !== postId || p.username !== req.session.user.firstName);
+    res.redirect('/');
+});
+
+// Profile route
 app.get('/profile', isAuthenticated, (req, res) => {
-    // Retrieve user details from session
-    const user = findUserByEmail(req.session.user.id);
-    res.render('profile', { user, showNavBar: true, layout: 'main' });
+    const userPosts = posts.filter(post => post.username === req.session.user.firstName);
+    res.render('profile', {
+        title: 'Profile',
+        user: req.session.user,
+        showNavBar: true,
+        layout: 'main',
+        userPosts
+    });
 });
 
 // Start the server
