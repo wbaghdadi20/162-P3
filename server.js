@@ -28,8 +28,15 @@ app.use(session({
 
 // Register custom Handlebars helper
 const handlebars = require('handlebars');
-handlebars.registerHelper('ifCond', function (v1, v2, options) {
+handlebars.registerHelper('ifCond', function(v1, v2, options) {
     if (v1 === v2) {
+        return options.fn(this);
+    }
+    return options.inverse(this);
+});
+
+handlebars.registerHelper('includes', function(array, value, options) {
+    if (array && array.includes(value)) {
         return options.fn(this);
     }
     return options.inverse(this);
@@ -52,7 +59,8 @@ let posts = [
         content: 'Just got back from an incredible trip through Europe. Visited some lesser-known spots that are truly breathtaking!',
         username: 'TravelGuru',
         timestamp: '2024-05-02 08:30',
-        likes: 0
+        likes: 0,
+        likedBy: [] // Array to keep track of users who liked the post
     },
     {
         id: uuidv4(),
@@ -60,7 +68,8 @@ let posts = [
         content: 'Learned how to make pasta from scratch, and it’s easier than you think. Sharing my favorite recipes and tips.',
         username: 'FoodieFanatic',
         timestamp: '2024-05-02 09:45',
-        likes: 0
+        likes: 0,
+        likedBy: [] // Array to keep track of users who liked the post
     }
 ];
 
@@ -120,7 +129,7 @@ app.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create a new user
-        const newUser = { firstName, lastName, email, password: hashedPassword, createdAt: new Date() };
+        const newUser = { firstName, lastName, email, password: hashedPassword, createdAt: new Date().toLocaleString() };
         addUser(newUser);
 
         // Redirect to login page
@@ -154,7 +163,12 @@ app.post('/login', async (req, res) => {
         }
 
         // Set up session
-        req.session.user = { id: user.email, loggedIn: true, firstName: user.firstName, lastName: user.lastName };
+        req.session.user = {
+            id: user.email, 
+            loggedIn: true, 
+            firstName: user.firstName, 
+            lastName: user.lastName 
+        };
         res.redirect('/');
     } catch (err) {
         console.error(err);
@@ -181,7 +195,8 @@ app.post('/posts', isAuthenticated, (req, res) => {
         content,
         username: req.session.user.firstName,
         timestamp: new Date().toISOString(),
-        likes: 0
+        likes: 0,
+        likedBy: [] // Initialize likedBy array
     };
     posts.push(newPost);
     res.redirect('/');
@@ -191,9 +206,21 @@ app.post('/posts', isAuthenticated, (req, res) => {
 app.post('/like/:id', isAuthenticated, (req, res) => {
     const postId = req.params.id;
     const post = posts.find(p => p.id === postId);
-    if (post && post.username !== req.session.user.firstName) {
-        post.likes++;
+
+    if (post) {
+        const userIndex = post.likedBy.indexOf(req.session.user.firstName);
+
+        if (userIndex === -1) {
+            // User has not liked the post yet
+            post.likes++;
+            post.likedBy.push(req.session.user.firstName);
+        } else {
+            // User has already liked the post, so unlike it
+            post.likes--;
+            post.likedBy.splice(userIndex, 1);
+        }
     }
+
     res.redirect('/');
 });
 

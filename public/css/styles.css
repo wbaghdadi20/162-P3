@@ -42,11 +42,59 @@ body {
     width: 95%;
     max-width: 100%;
     height: 100%;
-    padding: 20px;
+    padding: 20px 17px 20px 20px; /* Adjust padding to leave space on the right */
     margin: 30px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow: auto;
+    position: relative; /* Needed for pseudo-elements */
+    /* border: 1px solid red; */
+}
+
+/* Custom scrollbar styles for WebKit browsers (Chrome, Safari) */
+.container-homepage::-webkit-scrollbar {
+    width: 5px; /* Width of the scrollbar */
+}
+
+.container-homepage::-webkit-scrollbar-track {
+    background: white;
+    border-radius: 10px;
+    margin: 22px 0;
+}
+
+.container-homepage::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+    margin-left: -2px; /* Move scrollbar to the left */
+}
+
+.container-homepage::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Trimming the scrollbar top and bottom */
+.container-homepage:before,
+.container-homepage:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 5px; /* Adjust height to match scrollbar track margin */
+    background: white;
+    z-index: 1;
+}
+
+.container-homepage:before {
+    top: 0;
+    border-top-left-radius: 30px; /* Match container's border radius */
+    border-top-right-radius: 30px;
+}
+
+.container-homepage:after {
+    bottom: 0;
+    border-bottom-left-radius: 30px; /* Match container's border radius */
+    border-bottom-right-radius: 30px;
 }
 
 .homepage-title {
@@ -59,6 +107,8 @@ body {
     width: 100%;
     display: flex;
     justify-content: space-between;
+    flex-direction: row;
+    gap: 15px;
 }
 
 .posts-list {
@@ -70,12 +120,22 @@ body {
 }
 
 .post-form {
-    width: 45%;
+    min-width: 30%;
+    position: -webkit-sticky; /* For Safari */
+    position: sticky;
+    top: 20px; /* Distance from the top of the container */
+    align-self: flex-start; /* Align the sticky form to the top of the container */
+}
+
+.post-form form textarea {
+    min-width: 100%;
+    max-width: 100%;
+    min-height: 103px;
+    max-height: 440px;
 }
 
 .post-form form {
-    border: 1px solid black;
-    padding: 10px;
+    padding: 0px 10px 10px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -105,6 +165,7 @@ body {
 .post-form button:hover {
     background: linear-gradient(to right, #512da8, #5c6bc0);
 }
+
 
 .post {
     background-color: #f9f9f9;
@@ -265,4 +326,12 @@ body {
 .username {
     margin-left: 15px;
     font-weight: bold;
+}
+
+.user-posts {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
 }
