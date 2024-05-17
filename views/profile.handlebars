@@ -7,7 +7,7 @@
     <h3>Recent Posts:</h3>
     <div class="user-posts">
         {{#each userPosts}}
-        {{> post user=user}}
+        {{> post post=this user=../user}}
         {{/each}}
     </div>
 </div>

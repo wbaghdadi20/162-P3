@@ -16,7 +16,6 @@ body {
     flex-direction: column;
     height: 100vh;
     padding-top: 60px;
-    /* Adjust this value based on the height of your navbar */
     margin: 0;
     box-sizing: border-box;
 }
@@ -42,14 +41,13 @@ body {
     width: 95%;
     max-width: 100%;
     height: 100%;
-    padding: 20px 17px 20px 20px; /* Adjust padding to leave space on the right */
+    padding: 20px 17px 20px 20px;
     margin: 30px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     overflow: auto;
-    position: relative; /* Needed for pseudo-elements */
-    /* border: 1px solid red; */
+    position: relative;
 }
 
 .container-profile {
@@ -60,59 +58,44 @@ body {
     max-width: 100%;
     height: 100%;
     padding: 20px 17px 20px 20px;
-    /* Adjust padding to leave space on the right */
     margin: 30px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     overflow: auto;
     position: relative;
-    /* Needed for pseudo-elements */
-    /* border: 1px solid red; */
 }
 
-.container-profile h1{
+.container-profile h1 {
     margin-bottom: 10px;
     font-size: 50px;
 }
 
-/* Existing styles */
-
-/* Profile header styling */
 .profile-header {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
-    /* Adjust the spacing as needed */
     font-size: 35px;
 }
 
 .profile-header h1 {
     margin: 0;
     margin-right: 10px;
-    /* Space between the title and the avatar */
     font-size: 1.5em;
-    /* Adjust the font size as needed */
 }
 
 .profile-header img.avatar {
     width: 50px;
-    /* Adjust the size as needed */
     height: 50px;
-    /* Adjust the size as needed */
     border-radius: 50%;
 }
 
-/* Styling for member since text */
 .container-profile p {
     margin: 0;
     margin-bottom: 20px;
-    /* Adjust the spacing as needed */
     font-size: 1em;
-    /* Adjust the font size as needed */
 }
 
-/* Other styles */
 .avatar-profile {
     margin-right: 10px;
     border-radius: 50%;
@@ -120,48 +103,54 @@ body {
     height: 50px;
 }
 
-/* Custom scrollbar styles for WebKit browsers (Chrome, Safari) */
-.container-homepage::-webkit-scrollbar {
-    width: 5px; /* Width of the scrollbar */
+.container-homepage::-webkit-scrollbar,
+.container-profile::-webkit-scrollbar {
+    width: 5px;
 }
 
-.container-homepage::-webkit-scrollbar-track {
+.container-homepage::-webkit-scrollbar-track,
+.container-profile::-webkit-scrollbar-track {
     background: white;
     border-radius: 10px;
     margin: 22px 0;
 }
 
-.container-homepage::-webkit-scrollbar-thumb {
+.container-homepage::-webkit-scrollbar-thumb,
+.container-profile::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 10px;
-    margin-left: -2px; /* Move scrollbar to the left */
+    margin-left: -2px;
 }
 
-.container-homepage::-webkit-scrollbar-thumb:hover {
+.container-homepage::-webkit-scrollbar-thumb:hover,
+.container-profile::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
 
-/* Trimming the scrollbar top and bottom */
 .container-homepage:before,
-.container-homepage:after {
+.container-homepage:after,
+.container-profile:before,
+.container-profile:after {
     content: '';
     position: absolute;
     left: 0;
     right: 0;
-    height: 5px; /* Adjust height to match scrollbar track margin */
+    height: 5px;
     background: white;
     z-index: 1;
 }
 
-.container-homepage:before {
+.container-homepage:before,
+.container-profile:before {
     top: 0;
-    border-top-left-radius: 30px; /* Match container's border radius */
+    border-top-left-radius: 30px;
     border-top-right-radius: 30px;
 }
 
-.container-homepage:after {
+.container-homepage:after,
+.container-profile:after {
     bottom: 0;
-    border-bottom-left-radius: 30px; /* Match container's border radius */
+    border-bottom-left-radius: 30px;
     border-bottom-right-radius: 30px;
 }
 
@@ -189,10 +178,11 @@ body {
 
 .post-form {
     min-width: 30%;
-    position: -webkit-sticky; /* For Safari */
+    position: -webkit-sticky;
     position: sticky;
-    top: 20px; /* Distance from the top of the container */
-    align-self: flex-start; /* Align the sticky form to the top of the container */
+    top: 20px;
+    align-self: flex-start;
+    max-width: 100%;
 }
 
 .post-form form textarea {
@@ -234,7 +224,6 @@ body {
     background: linear-gradient(to right, #512da8, #5c6bc0);
 }
 
-
 .post {
     background: rgb(241, 241, 241);
     border-radius: 10px;
@@ -246,7 +235,6 @@ body {
     margin-bottom: 10px;
 }
 
-/* Flexbox layout for post header */
 .post-header {
     display: flex;
     align-items: center;
@@ -266,15 +254,11 @@ body {
 
 .post-header .post-author {
     margin-left: auto;
-    /* Push the author to the right */
     font-size: 0.9em;
-    /* Adjust the size as needed */
     color: gray;
 }
 
-/* Styling for post footer */
 .post-footer {
-    /* border: 1px solid black; */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -286,17 +270,14 @@ body {
     color: gray;
 }
 
-/* Container for buttons to align them to the right */
 .button-container {
     display: flex;
     align-items: center;
 }
 
-/* Specific styles for like and delete buttons */
 .like-button,
 .delete-button {
     background-color: rgb(218, 53, 53);
-    /* Red for like button */
     color: white;
     border: none;
     padding: 3px 7px;
@@ -308,20 +289,16 @@ body {
 
 .like-button:hover {
     background-color: rgb(255, 2, 2);
-    /* Darker red on hover */
 }
 
 .delete-button {
     background-color: rgb(57, 57, 135);
-    /* Blue for delete button */
     padding: 3px 7px;
     margin-left: 10px;
 }
 
 .delete-button:hover {
     background-color: rgb(4, 4, 198);
-    /* Darker blue on hover */
-    /* transform: scale(1.1); */
 }
 
 .post-footer form {
@@ -406,12 +383,10 @@ body {
     z-index: 2;
 }
 
-/* General Styles */
 body {
     font-family: Arial, sans-serif;
 }
 
-/* Navbar Styles */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -420,16 +395,11 @@ body {
     color: white;
     padding: 10px 20px;
     width: 100%;
-    /* Make the navbar span the entire width of the screen */
     box-sizing: border-box;
-    /* Include padding and border in the element's total width and height */
     position: fixed;
-    /* Keep the navbar fixed at the top */
     top: 0;
-    /* Position the navbar at the top of the page */
     left: 0;
     z-index: 1000;
-    /* Ensure the navbar is above other content */
 }
 
 .navbar-left {
@@ -466,11 +436,8 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 10px;
+    gap: 20px;
 }
-
-
-/* Existing styles */
 
 .avatar {
     width: 50px;
@@ -480,41 +447,36 @@ body {
     vertical-align: middle;
 }
 
-/* Existing styles */
-
-/* Emoji picker styles */
+/* New styles for emoji picker */
 .emoji-picker {
     display: none;
     flex-wrap: wrap;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 10px;
+    gap: 5px;
     max-width: 300px;
-    max-height: 200px;
-    overflow-y: auto;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
     position: absolute;
-    z-index: 1000;
-    top: 40px;
-    /* Adjust this value based on the button's height and padding */
-    left: 0;
-    /* Align the picker to the left edge of the form */
+    z-index: 10;
 }
 
-.emoji-picker.visible {
-    display: flex;
-}
-
-.emoji-button {
+.emoji-picker button {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 24px;
-    padding: 5px;
+    font-size: 20px;
 }
 
-/* Positioning the emoji picker below the button */
-.post-form {
-    position: relative;
-    /* Ensure the picker is positioned relative to the form */
+.emoji-button {
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.emoji-button:hover {
+    background-color: #e1e1e1;
 }
