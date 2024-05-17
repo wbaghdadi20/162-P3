@@ -246,8 +246,6 @@ body {
     margin-bottom: 10px;
 }
 
-/* Existing styles */
-
 /* Flexbox layout for post header */
 .post-header {
     display: flex;
@@ -276,6 +274,7 @@ body {
 
 /* Styling for post footer */
 .post-footer {
+    /* border: 1px solid black; */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -287,45 +286,42 @@ body {
     color: gray;
 }
 
-
+/* Container for buttons to align them to the right */
+.button-container {
+    display: flex;
+    align-items: center;
+}
 
 /* Specific styles for like and delete buttons */
-.like-button {
+.like-button,
+.delete-button {
     background-color: rgb(218, 53, 53);
     /* Red for like button */
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 3px 7px;
     border-radius: 5px;
     cursor: pointer;
     font-size: 0.9em;
     margin-left: 10px;
-    margin-top: 20px;
 }
 
 .like-button:hover {
     background-color: rgb(255, 2, 2);
     /* Darker red on hover */
-    transform: scale(1.2);
 }
 
 .delete-button {
     background-color: rgb(57, 57, 135);
     /* Blue for delete button */
-    
-    color: white;
-    border: none;
-    padding: 3px 5px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9em;
+    padding: 3px 7px;
     margin-left: 10px;
 }
 
 .delete-button:hover {
     background-color: rgb(4, 4, 198);
     /* Darker blue on hover */
-    transform: scale(1.1);
+    /* transform: scale(1.1); */
 }
 
 .post-footer form {

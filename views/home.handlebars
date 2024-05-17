@@ -1,7 +1,6 @@
 <div class="container-homepage">
     <h1 class="homepage-title">Welcome to BLOG IT</h1>
 
-    {{!-- Debugging user object --}}
     {{#if user}}
     <div class="debug">
         <p>User is logged in: {{user.firstName}} {{user.lastName}}</p>
@@ -13,14 +12,12 @@
     {{/if}}
 
     <div class="homepage-content">
-        {{!-- List of posts --}}
         <div class="posts-list">
             {{#each posts}}
-            {{> post}}
+            {{> post post=this user=../user}}
             {{/each}}
         </div>
 
-        {{!-- Post form, shown only if user is logged in --}}
         {{#if user}}
         <div class="post-form">
             <form action="/posts" method="POST">
@@ -28,14 +25,13 @@
                 <textarea name="content" placeholder="Post Content" required></textarea>
                 <button type="submit">Create Post</button>
                 <button type="button" id="emoji-button">😊</button>
-                <div id="emoji-picker" class="emoji-picker"></div> <!-- Container for emoji picker -->
+                <div id="emoji-picker" class="emoji-picker"></div>
             </form>
         </div>
         {{/if}}
     </div>
 
     <br>
-    {{!-- Footer, shown only if user is not logged in --}}
     {{#unless user}}
     <footer>
         <p><a href="/login">SIGN IN</a> to post!</p>

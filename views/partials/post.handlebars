@@ -11,16 +11,28 @@
     <div class="post-footer">
         <span class="post-timestamp">{{timestamp}}</span>
 
-        {{!-- Show like button for all posts --}}
-        <form action="/like/{{id}}" method="POST">
-            <button type="submit" class = "like-button" >Likes {{likes}}</button>
-        </form>
+        {{#if user}}
+        <div class="debug">
+            <p>User is logged in: {{user.firstName}} {{user.lastName}}</p>
+        </div>
+        {{else}}
+        <div class="debug">
+            <p>No user is logged in.</p>
+        </div>
+        {{/if}}
 
-        {{!-- Show delete button if the post belongs to the logged-in user --}}
-        
-            <form action="/delete/{{id}}" method="POST">
-                <button type="submit"  class = "delete-button" >Delete</button>
+        <div class="button-container">
+            {{!-- Show like button for all posts --}}
+            <form action="/like/{{id}}" method="POST">
+                <button type="submit" class="like-button">Likes {{likes}}</button>
             </form>
-       
+
+            {{!-- Show delete button if the post belongs to the logged-in user --}}
+            {{#ifUserMatch user.username username}}
+            <form action="/delete/{{id}}" method="POST">
+                <button type="submit" class="delete-button">Delete</button>
+            </form>
+            {{/ifUserMatch}}
+        </div>
     </div>
 </div>

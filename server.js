@@ -1,3 +1,8 @@
+/** TODO:
+ * if trying to register and user already exist, leads to blank page with error message fix that
+ * 
+ * 
+ **/
 const express = require('express');
 const { engine } = require('express-handlebars');
 const session = require('express-session');
@@ -36,13 +41,16 @@ handlebars.registerHelper('ifCond', function(v1, v2, options) {
     return options.inverse(this);
 });
 
-handlebars.registerHelper('ifUserMatch', function(firstName, lastName, username, options) {
-    const fullName = `${firstName} ${lastName}`;
-    if (fullName === username) {
+handlebars.registerHelper('ifUserMatch', function(userUsername, postUsername, options) {
+    console.log('Session Username: ' + userUsername);
+    console.log('Post Username: ' + postUsername);
+
+    if (userUsername === postUsername) {
         return options.fn(this);
     }
     return options.inverse(this);
 });
+
 
 handlebars.registerHelper('includes', function(array, value, options) {
     if (array && array.includes(value)) {
@@ -86,7 +94,7 @@ let posts = [
 app.get('/', (req, res) => {
     // Sort posts by timestamp in descending order
     const sortedPosts = posts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    console.log(`User data: ${JSON.stringify(req.session.user)}`);
+    console.log(`User data in session: ${JSON.stringify(req.session.user)}`);
 
     res.render('home', {
         title: 'Home',
@@ -142,7 +150,14 @@ app.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create a new user
-        const newUser = { firstName, lastName, email, password: hashedPassword, createdAt: new Date().toLocaleString() };
+        const newUser = { 
+            firstName, 
+            lastName, 
+            email, 
+            password: hashedPassword,
+            username: `${firstName} ${lastName}`,
+            createdAt: new Date().toLocaleString() 
+        };
         console.log("New user created at: " + newUser.createdAt);
         addUser(newUser);
 
@@ -182,6 +197,7 @@ app.post('/login', async (req, res) => {
             loggedIn: true, 
             firstName: user.firstName, 
             lastName: user.lastName,
+            username: user.username,
             createdAt: user.createdAt
         };
         console.log(`User logged in: ${JSON.stringify(req.session.user)}`);
