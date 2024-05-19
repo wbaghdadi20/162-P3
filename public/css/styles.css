@@ -411,6 +411,7 @@ body {
 .logo {
     height: 50px;
     margin-right: 10px;
+    border-radius: 10px;
 }
 
 .app-name {
@@ -454,11 +455,12 @@ body {
     vertical-align: middle;
 }
 
-/* New styles for emoji picker */
 .emoji-picker {
     display: none;
-    flex-wrap: wrap;
-    gap: 5px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
     max-width: 300px;
     background-color: #f9f9f9;
     border: 1px solid #ddd;
@@ -468,22 +470,32 @@ body {
     z-index: 10;
 }
 
-.emoji-picker button {
+.emoji-nav-button {
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.emoji-nav-button:hover {
+    background-color: #e1e1e1;
+}
+
+.emoji-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+}
+
+.emoji-button {
     background: none;
     border: none;
     cursor: pointer;
     font-size: 20px;
-}
-
-.emoji-button {
-    background-color: #f1f1f1;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 10px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.emoji-button:hover {
-    background-color: #e1e1e1;
+    padding: 5px;
 }

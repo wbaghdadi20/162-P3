@@ -74,9 +74,16 @@ const findUserByEmail = (email) => {
 };
 
 // Route to get emojis
+const emojiPages = [
+    ['😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊'],
+    ['😋', '😎', '😍', '😘', '🥰', '😗', '😙', '😚', '🙂', '🤗'],
+    // Add more pages of emojis here
+];
+
 app.get('/emojis', (req, res) => {
-    const emojis = ['😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊', '😋', '😎', '😍', '😘', '🥰', '😗', '😙', '😚', '🙂', '🤗'];
-    res.json(emojis);
+    const page = parseInt(req.query.page) || 0;
+    const emojis = emojiPages[page] || [];
+    res.json({ emojis, totalPages: emojiPages.length });
 });
 
 // Home page route
