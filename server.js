@@ -1,15 +1,9 @@
-/** TODO:
- * if trying to register and user already exist, leads to blank page with error message fix that
- * 
- * 
- **/
 const express = require('express');
 const { engine } = require('express-handlebars');
 const session = require('express-session');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
-const { addUser, findUserByEmail } = require('./public/js/users');
 const Jimp = require('jimp');
 
 // Initialize Express app
@@ -42,15 +36,11 @@ handlebars.registerHelper('ifCond', function(v1, v2, options) {
 });
 
 handlebars.registerHelper('ifUserMatch', function(userUsername, postUsername, options) {
-    console.log('Session Username: ' + userUsername);
-    console.log('Post Username: ' + postUsername);
-
     if (userUsername === postUsername) {
         return options.fn(this);
     }
     return options.inverse(this);
 });
-
 
 handlebars.registerHelper('includes', function(array, value, options) {
     if (array && array.includes(value)) {
@@ -68,27 +58,20 @@ const isAuthenticated = (req, res, next) => {
     }
 };
 
-// Sample data
-let posts = [
-    {
-        id: uuidv4(),
-        title: 'Exploring Hidden Gems in Europe',
-        content: 'Just got back from an incredible trip through Europe. Visited some lesser-known spots that are truly breathtaking!',
-        username: 'TravelGuru',
-        timestamp: '5/2/2024, 08:30:10 AM',
-        likes: 0,
-        likedBy: [] // Array to keep track of users who liked the post
-    },
-    {
-        id: uuidv4(),
-        title: 'The Ultimate Guide to Homemade Pasta',
-        content: 'Learned how to make pasta from scratch, and it’s easier than you think. Sharing my favorite recipes and tips.',
-        username: 'FoodieFanatic',
-        timestamp: '5/2/2024, 09:11:11 AM',
-        likes: 0,
-        likedBy: [] // Array to keep track of users who liked the post
-    }
-];
+// Sample data for posts
+let posts = [];
+
+// Sample data for users
+let users = [];
+
+// Functions to manage users
+const addUser = (user) => {
+    users.push(user);
+};
+
+const findUserByEmail = (email) => {
+    return users.find(user => user.email === email);
+};
 
 // Home page route
 app.get('/', (req, res) => {
@@ -133,17 +116,17 @@ app.post('/register', async (req, res) => {
 
     // Basic validation
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
-        return res.status(400).send('All fields are required.');
+        return res.status(400).render('loginRegister', { formType: 'Register', isLogin: false, error: 'All fields are required.', showNavBar: false });
     }
     if (password !== confirmPassword) {
-        return res.status(400).send('Passwords do not match.');
+        return res.status(400).render('loginRegister', { formType: 'Register', isLogin: false, error: 'Passwords do not match.', showNavBar: false });
     }
 
     try {
         // Check if user already exists
         const existingUser = findUserByEmail(email);
         if (existingUser) {
-            return res.status(400).send('User already exists.');
+            return res.status(400).render('loginRegister', { formType: 'Register', isLogin: false, error: 'User already exists.', showNavBar: false });
         }
 
         // Hash the password
@@ -151,21 +134,21 @@ app.post('/register', async (req, res) => {
 
         // Create a new user
         const newUser = { 
-            firstName, 
-            lastName, 
-            email, 
-            password: hashedPassword,
+            id: uuidv4(),
             username: `${firstName} ${lastName}`,
-            createdAt: new Date().toLocaleString() 
+            avatar_url: undefined,
+            memberSince: new Date().toLocaleString(),
+            email,
+            password: hashedPassword
         };
-        console.log("New user created at: " + newUser.createdAt);
+        console.log("New user created at: " + newUser.memberSince);
         addUser(newUser);
 
         // Redirect to login page
         res.redirect('/login');
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server error.');
+        res.status(500).render('loginRegister', { formType: 'Register', isLogin: false, error: 'Server error.', showNavBar: false });
     }
 });
 
@@ -193,12 +176,12 @@ app.post('/login', async (req, res) => {
 
         // Set up session
         req.session.user = {
-            id: user.email, 
+            id: user.id, 
             loggedIn: true, 
-            firstName: user.firstName, 
-            lastName: user.lastName,
+            firstName: user.username.split(' ')[0], 
+            lastName: user.username.split(' ')[1],
             username: user.username,
-            createdAt: user.createdAt
+            createdAt: user.memberSince
         };
         console.log(`User logged in: ${JSON.stringify(req.session.user)}`);
         res.redirect('/');
@@ -238,14 +221,19 @@ app.post('/posts', isAuthenticated, (req, res) => {
 app.post('/like/:id', isAuthenticated, (req, res) => {
     const postId = req.params.id;
     const post = posts.find(p => p.id === postId);
+    const username = `${req.session.user.firstName} ${req.session.user.lastName}`;
 
     if (post) {
-        const userIndex = post.likedBy.indexOf(req.session.user.firstName);
+        const userIndex = post.likedBy.indexOf(req.session.user.username);
+
+        if (post.username === username) {
+            return res.redirect('/');
+        }
 
         if (userIndex === -1) {
             // User has not liked the post yet
             post.likes++;
-            post.likedBy.push(req.session.user.firstName);
+            post.likedBy.push(req.session.user.username);
         } else {
             // User has already liked the post, so unlike it
             post.likes--;
@@ -265,6 +253,32 @@ app.post('/delete/:id', isAuthenticated, (req, res) => {
     res.redirect('/');
 });
 
+// Get a single post by ID
+app.get('/post/:id', (req, res) => {
+    const postId = req.params.id;
+    const post = posts.find(p => p.id === postId);
+
+    if (!post) {
+        return res.redirect('/error');
+    }
+
+    res.render('post', {
+        title: post.title,
+        post,
+        user: req.session.user,
+        showNavBar: true,
+        layout: 'main'
+    });
+});
+
+// Error page route
+app.get('/error', (req, res) => {
+    res.render('error', {
+        title: 'Error',
+        showNavBar: true,
+        layout: 'main'
+    });
+});
 
 // Profile route
 app.get('/profile', isAuthenticated, (req, res) => {
@@ -272,7 +286,6 @@ app.get('/profile', isAuthenticated, (req, res) => {
     const userPosts = posts.filter(post => post.username === fullName);
 
     console.log(`User data for profile: ${JSON.stringify(req.session.user)}`);
-
 
     res.render('profile', {
         title: 'Profile',
