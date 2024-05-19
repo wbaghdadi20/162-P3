@@ -73,6 +73,12 @@ const findUserByEmail = (email) => {
     return users.find(user => user.email === email);
 };
 
+// Route to get emojis
+app.get('/emojis', (req, res) => {
+    const emojis = ['😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊', '😋', '😎', '😍', '😘', '🥰', '😗', '😙', '😚', '🙂', '🤗'];
+    res.json(emojis);
+});
+
 // Home page route
 app.get('/', (req, res) => {
     // Sort posts by timestamp in descending order

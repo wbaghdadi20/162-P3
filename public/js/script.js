@@ -74,20 +74,23 @@ console.log('started '); // Debugging log
         const emojiPicker = document.createElement('div');
         emojiPicker.classList.add('emoji-picker');
 
-        const emojis = ['😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊', '😋', '😎', '😍', '😘', '🥰', '😗', '😙', '😚', '🙂', '🤗'];
-
-        emojis.forEach(emoji => {
-            const button = document.createElement('button');
-            button.innerText = emoji;
-            button.addEventListener('click', () => {
-                if (activeField) {
-                    const field = qs(`[name="${activeField}"]`);
-                    insertAtCursor(field, emoji);
-                    field.focus();
-                }
-            });
-            emojiPicker.appendChild(button);
-        });
+        fetch('/emojis')
+            .then(response => response.json())
+            .then(emojis => {
+                emojis.forEach(emoji => {
+                    const button = document.createElement('button');
+                    button.innerText = emoji;
+                    button.addEventListener('click', () => {
+                        if (activeField) {
+                            const field = qs(`[name="${activeField}"]`);
+                            insertAtCursor(field, emoji);
+                            field.focus();
+                        }
+                    });
+                    emojiPicker.appendChild(button);
+                });
+            })
+            .catch(error => console.error('Error fetching emojis:', error));
 
         return emojiPicker;
     }
