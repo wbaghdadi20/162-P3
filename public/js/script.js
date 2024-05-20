@@ -14,9 +14,12 @@ console.log('started '); // Debugging log
 
     function init() {
         const emojiButton = qs('.emoji-button');
-        const postForm = qs('.post-form form');
+        const prevButton = qs('.emoji-container .emoji-nav-button:first-child');
+        const nextButton = qs('.emoji-container .emoji-nav-button:last-child');
 
         emojiButton.addEventListener('click', toggleEmojiPicker);
+        prevButton.addEventListener('click', () => changeEmojiPage(-1));
+        nextButton.addEventListener('click', () => changeEmojiPage(1));
 
         setupEmojiPicker();
 
@@ -30,23 +33,15 @@ console.log('started '); // Debugging log
         contentField.addEventListener('keyup', () => updateCursorPosition('content'));
 
         document.addEventListener('click', (event) => {
-            const emojiPicker = qs('.emoji-picker');
+            const emojiPicker = qs('.emoji-container');
             if (emojiPicker.style.display === 'flex' && !emojiPicker.contains(event.target) && event.target !== emojiButton) {
                 emojiPicker.style.display = 'none';
             }
         });
     }
 
-    function id(id) {
-        return document.getElementById(id);
-    }
-
-    function qs(class_name) {
-        return document.querySelector(class_name);
-    }
-
-    function qsa(class_name) {
-        return document.querySelectorAll(class_name);
+    function qs(selector) {
+        return document.querySelector(selector);
     }
 
     function setActiveField(fieldName) {
@@ -60,43 +55,7 @@ console.log('started '); // Debugging log
     }
 
     function setupEmojiPicker() {
-        const emojiPicker = createEmojiPicker();
-        document.body.appendChild(emojiPicker);
         fetchEmojis(currentEmojiPage);
-    }
-
-    function createEmojiPicker() {
-        const emojiPicker = document.createElement('div');
-        emojiPicker.classList.add('emoji-picker');
-
-        const prevButton = document.createElement('button');
-        prevButton.innerText = '<';
-        prevButton.classList.add('emoji-nav-button');
-        prevButton.addEventListener('click', () => {
-            if (currentEmojiPage > 0) {
-                currentEmojiPage--;
-                fetchEmojis(currentEmojiPage);
-            }
-        });
-
-        const nextButton = document.createElement('button');
-        nextButton.innerText = '>';
-        nextButton.classList.add('emoji-nav-button');
-        nextButton.addEventListener('click', () => {
-            if (currentEmojiPage < totalEmojiPages - 1) {
-                currentEmojiPage++;
-                fetchEmojis(currentEmojiPage);
-            }
-        });
-
-        const emojiContent = document.createElement('div');
-        emojiContent.classList.add('emoji-content');
-
-        emojiPicker.appendChild(prevButton);
-        emojiPicker.appendChild(emojiContent);
-        emojiPicker.appendChild(nextButton);
-
-        return emojiPicker;
     }
 
     function fetchEmojis(page) {
@@ -112,8 +71,9 @@ console.log('started '); // Debugging log
                 emojis.forEach(emoji => {
                     const button = document.createElement('button');
                     button.innerText = emoji;
-                    button.classList.add('emoji-button');
-                    button.addEventListener('click', () => {
+                    button.classList.add('emoji');
+                    button.addEventListener('click', (event) => {
+                        event.preventDefault();
                         if (activeField) {
                             const field = qs(`[name="${activeField}"]`);
                             insertAtCursor(field, emoji);
@@ -126,8 +86,18 @@ console.log('started '); // Debugging log
             .catch(error => console.error('Error fetching emojis:', error));
     }
 
+    function changeEmojiPage(direction) {
+        if (direction === -1 && currentEmojiPage > 0) {
+            currentEmojiPage--;
+            fetchEmojis(currentEmojiPage);
+        } else if (direction === 1 && currentEmojiPage < totalEmojiPages - 1) {
+            currentEmojiPage++;
+            fetchEmojis(currentEmojiPage);
+        }
+    }
+
     function toggleEmojiPicker(event) {
-        const emojiPicker = qs('.emoji-picker');
+        const emojiPicker = qs('.emoji-container');
         const button = event.target;
         if (emojiPicker.style.display === 'none' || !emojiPicker.style.display) {
             emojiPicker.style.display = 'flex';

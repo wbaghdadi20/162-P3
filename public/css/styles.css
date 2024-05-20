@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
 
+/* General Styles */
 * {
     margin: 0;
     padding: 0;
@@ -20,36 +21,8 @@ body {
     box-sizing: border-box;
 }
 
-.container {
-    background-color: white;
-    border-radius: 30px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
-    position: relative;
-    overflow: hidden;
-    width: 768px;
-    max-width: 100%;
-    min-height: 480px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.container-homepage {
-    background-color: white;
-    border-radius: 30px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
-    width: 95%;
-    max-width: 100%;
-    height: 100%;
-    padding: 20px 17px 20px 20px;
-    margin: 30px 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow: auto;
-    position: relative;
-}
-
+/* Container Styles */
+.container-homepage,
 .container-profile {
     background-color: white;
     border-radius: 30px;
@@ -64,43 +37,6 @@ body {
     align-items: center;
     overflow: auto;
     position: relative;
-}
-
-.container-profile h1 {
-    margin-bottom: 10px;
-    font-size: 50px;
-}
-
-.profile-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    font-size: 35px;
-}
-
-.profile-header h1 {
-    margin: 0;
-    margin-right: 10px;
-    font-size: 1.5em;
-}
-
-.profile-header img.avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-}
-
-.container-profile p {
-    margin: 0;
-    margin-bottom: 20px;
-    font-size: 1em;
-}
-
-.avatar-profile {
-    margin-right: 10px;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
 }
 
 .container-homepage::-webkit-scrollbar,
@@ -154,6 +90,7 @@ body {
     border-bottom-right-radius: 30px;
 }
 
+/* Homepage Title */
 .homepage-title {
     margin-bottom: 20px;
     font-size: 24px;
@@ -161,6 +98,7 @@ body {
     font-family: Tahoma;
 }
 
+/* Homepage Content */
 .homepage-content {
     width: 100%;
     display: flex;
@@ -177,6 +115,7 @@ body {
     gap: 20px;
 }
 
+/* Post Form */
 .post-form {
     min-width: 30%;
     position: -webkit-sticky;
@@ -184,13 +123,6 @@ body {
     top: 20px;
     align-self: flex-start;
     max-width: 100%;
-}
-
-.post-form form textarea {
-    min-width: 100%;
-    max-width: 100%;
-    min-height: 103px;
-    max-height: 440px;
 }
 
 .post-form form {
@@ -210,7 +142,16 @@ body {
     outline: none;
 }
 
-.post-form button {
+.post-form textarea {
+    min-width: 100%;
+    max-width: 100%;
+    min-height: 130px;
+    max-height: 400px;
+    resize: vertical;
+}
+
+/* Only first child buttons in post-form */
+.post-form > form > button {
     color: white;
     font-size: 14px;
     padding: 10px 20px;
@@ -221,10 +162,45 @@ body {
     background: linear-gradient(to left, #512da8, #5c6bc0);
 }
 
-.post-form button:hover {
+.post-form > form > button:hover {
     background: linear-gradient(to right, #512da8, #5c6bc0);
 }
 
+/* Emoji Container */
+.emoji-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    background-color: white;
+    border-radius: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.emoji-content {
+    display: flex;
+    flex-wrap: wrap;
+    flex: 1;
+    gap: 10px;
+    justify-content: center;
+}
+
+.emoji-container button {
+    background-color: #eee;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.emoji-container button:hover {
+    background-color: #ddd;
+}
+
+/* Posts */
 .post {
     background: rgb(241, 241, 241);
     border-radius: 10px;
@@ -416,9 +392,9 @@ body {
 
 .app-name {
     font-size: 2em;
-    
 }
-.navbar-left a{
+
+.navbar-left a {
     color: black;
     text-decoration: none;
     font-weight: bolder;
@@ -453,49 +429,4 @@ body {
     border-radius: 50%;
     margin-right: 10px;
     vertical-align: middle;
-}
-
-.emoji-picker {
-    display: none;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    max-width: 300px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 10px;
-    position: absolute;
-    z-index: 10;
-}
-
-.emoji-nav-button {
-    background-color: #f1f1f1;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.emoji-nav-button:hover {
-    background-color: #e1e1e1;
-}
-
-.emoji-content {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    justify-content: center;
-}
-
-.emoji-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 20px;
-    padding: 5px;
 }
