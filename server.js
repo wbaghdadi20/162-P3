@@ -201,6 +201,8 @@ app.post('/register', async (req, res) => {
         // Create a new user
         const newUser = { 
             id: uuidv4(),
+            firstName,
+            lastName,
             username: `${firstName} ${lastName}`,
             avatar_url: undefined,
             memberSince: new Date().toLocaleString(),
@@ -244,8 +246,8 @@ app.post('/login', async (req, res) => {
         req.session.user = {
             id: user.id, 
             loggedIn: true, 
-            firstName: user.username.split(' ')[0], 
-            lastName: user.username.split(' ')[1],
+            firstName: user.firstName, 
+            lastName: user.lastName,
             username: user.username,
             createdAt: user.memberSince
         };
