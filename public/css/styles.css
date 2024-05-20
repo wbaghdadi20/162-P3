@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
 
-/* General Styles */
 * {
     margin: 0;
     padding: 0;
@@ -21,8 +20,36 @@ body {
     box-sizing: border-box;
 }
 
-/* Container Styles */
-.container-homepage,
+.container {
+    background-color: white;
+    border-radius: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+    position: relative;
+    overflow: hidden;
+    width: 768px;
+    max-width: 100%;
+    min-height: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container-homepage {
+    background-color: white;
+    border-radius: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+    width: 95%;
+    max-width: 100%;
+    height: 100%;
+    padding: 20px 17px 20px 20px;
+    margin: 30px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: auto;
+    position: relative;
+}
+
 .container-profile {
     background-color: white;
     border-radius: 30px;
@@ -37,6 +64,43 @@ body {
     align-items: center;
     overflow: auto;
     position: relative;
+}
+
+.container-profile h1 {
+    margin-bottom: 10px;
+    font-size: 50px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 35px;
+}
+
+.profile-header h1 {
+    margin: 0;
+    margin-right: 10px;
+    font-size: 1.5em;
+}
+
+.profile-header img.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+.container-profile p {
+    margin: 0;
+    margin-bottom: 20px;
+    font-size: 1em;
+}
+
+.avatar-profile {
+    margin-right: 10px;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
 }
 
 .container-homepage::-webkit-scrollbar,
@@ -90,7 +154,6 @@ body {
     border-bottom-right-radius: 30px;
 }
 
-/* Homepage Title */
 .homepage-title {
     margin-bottom: 20px;
     font-size: 24px;
@@ -98,7 +161,6 @@ body {
     font-family: Tahoma;
 }
 
-/* Homepage Content */
 .homepage-content {
     width: 100%;
     display: flex;
@@ -115,7 +177,6 @@ body {
     gap: 20px;
 }
 
-/* Post Form */
 .post-form {
     min-width: 30%;
     position: -webkit-sticky;
@@ -123,6 +184,14 @@ body {
     top: 20px;
     align-self: flex-start;
     max-width: 100%;
+}
+
+.post-form form textarea {
+    min-width: 100%;
+    max-width: 100%;
+    min-height: 103px;
+    max-height: 363px;
+    resize: vertical;
 }
 
 .post-form form {
@@ -142,16 +211,8 @@ body {
     outline: none;
 }
 
-.post-form textarea {
-    min-width: 100%;
-    max-width: 100%;
-    min-height: 130px;
-    max-height: 400px;
-    resize: vertical;
-}
-
-/* Only first child buttons in post-form */
-.post-form > form > button {
+/* Specific selector for buttons inside .post-form form */
+.post-form form > button {
     color: white;
     font-size: 14px;
     padding: 10px 20px;
@@ -162,16 +223,15 @@ body {
     background: linear-gradient(to left, #512da8, #5c6bc0);
 }
 
-.post-form > form > button:hover {
+.post-form form > button:hover {
     background: linear-gradient(to right, #512da8, #5c6bc0);
 }
 
-/* Emoji Container */
+/* Emoji Container Styles */
 .emoji-container {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 5px;
     background-color: white;
     border-radius: 30px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
@@ -179,28 +239,34 @@ body {
     margin-top: 10px;
 }
 
-.emoji-content {
-    display: flex;
-    flex-wrap: wrap;
-    flex: 1;
-    gap: 10px;
-    justify-content: center;
-}
-
-.emoji-container button {
+.emoji-nav-button {
     background-color: #eee;
     border: none;
     padding: 10px;
-    font-size: 16px;
-    border-radius: 8px;
     cursor: pointer;
+    border-radius: 8px;
 }
 
-.emoji-container button:hover {
-    background-color: #ddd;
+.emoji-content {
+    flex-grow: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
 }
 
-/* Posts */
+.emoji-content .emoji {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+.emoji-content .emoji:hover {
+    background-color: #f0f0f0;
+    border-radius: 8px;
+}
+
 .post {
     background: rgb(241, 241, 241);
     border-radius: 10px;
@@ -429,4 +495,8 @@ body {
     border-radius: 50%;
     margin-right: 10px;
     vertical-align: middle;
+}
+
+button {
+    user-select: none;
 }
