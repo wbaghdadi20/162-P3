@@ -1,5 +1,12 @@
 <div class="container-homepage">
     <h1 class="homepage-title">Welcome to BLOG IT</h1>
+    
+    {{#unless user}}
+    <span>
+        <p><a href="/login">SIGN IN</a> to post!</p>
+    </span>
+    <br>
+    {{/unless}}
 
     <div class="homepage-content">
         <div class="posts-list">
@@ -29,12 +36,4 @@
         </div>
         {{/if}}
     </div>
-
-    <br>
-    {{#unless user}}
-    <footer>
-        <p><a href="/login">SIGN IN</a> to post!</p>
-    </footer>
-    {{/unless}}
-    <br>
 </div>
