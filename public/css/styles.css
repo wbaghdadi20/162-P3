@@ -237,16 +237,22 @@ body {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
     padding: 10px;
     margin-top: 10px;
+    width: 100%; /* Ensure the container takes up the full width of its parent */
+    max-width: 400px; /* Optional: set a max-width for the container */
+    box-sizing: border-box; /* Ensure padding is included in the width calculation */
 }
 
 .emoji-header {
     width: 100%;
     padding: 0px 10px 10px;
+    box-sizing: border-box; /* Ensure padding is included in the width calculation */
 }
 
 .emoji-content-container {
     display: flex;
     flex-direction: row;
+    align-items: center; /* Center items vertically */
+    width: 100%; /* Ensure the content container takes up the full width */
 }
 
 .emoji-nav-button {
@@ -256,6 +262,7 @@ body {
     cursor: pointer;
     border-radius: 8px;
     height: 50%;
+    flex-shrink: 0; /* Prevent the button from shrinking */
 }
 
 .emoji-content {
