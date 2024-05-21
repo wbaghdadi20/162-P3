@@ -4,7 +4,7 @@ const session = require('express-session');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
-const Jimp = require('jimp');
+const { createCanvas, loadImage } = require('canvas');
 
 // Initialize Express app
 const app = express();
@@ -365,24 +365,30 @@ app.get('/profile', isAuthenticated, (req, res) => {
 });
 
 // Avatar generation endpoint
-app.get('/avatar/:username', async (req, res) => {
+app.get('/avatar/:username', (req, res) => {
     const { username } = req.params;
     const firstLetter = username.charAt(0).toUpperCase();
     const colors = ['#FFB6C1', '#ADD8E6', '#90EE90', '#FFA07A', '#20B2AA', '#87CEFA', '#778899', '#B0C4DE'];
     const backgroundColor = colors[username.charCodeAt(0) % colors.length];
 
-    const image = new Jimp(200, 200, backgroundColor, (err, image) => {
-        if (err) throw err;
-    });
+    const canvas = createCanvas(200, 200);
+    const ctx = canvas.getContext('2d');
 
-    const font = await Jimp.loadFont(Jimp.FONT_SANS_128_WHITE);
-    image.print(font, 0, 0, {
-        text: firstLetter,
-        alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-        alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE
-    }, 200, 200);
+    // Set background color
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, 200, 200);
 
-    image.getBuffer(Jimp.MIME_PNG, (err, buffer) => {
+    // Set text properties
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '128px Sans';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Draw text
+    ctx.fillText(firstLetter, 100, 100);
+
+    // Send the image as a response
+    canvas.toBuffer((err, buffer) => {
         if (err) throw err;
         res.setHeader('Content-Type', 'image/png');
         res.send(buffer);

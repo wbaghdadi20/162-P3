@@ -10,17 +10,6 @@
     </div>
     <div class="post-footer">
         <span class="post-timestamp">{{timestamp}}</span>
-
-        {{!-- {{#if user}}
-        <div class="debug">
-            <p>User is logged in: {{user.username}}</p>
-        </div>
-        {{else}}
-        <div class="debug">
-            <p>No user is logged in.</p>
-        </div>
-        {{/if}} --}}
-
         <div class="button-container">
             {{!-- Show like button for all posts --}}
             <form action="/like/{{id}}" method="POST">
