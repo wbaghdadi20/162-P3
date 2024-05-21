@@ -230,7 +230,7 @@ body {
 /* Emoji Container Styles */
 .emoji-container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     background-color: white;
     border-radius: 30px;
@@ -239,12 +239,23 @@ body {
     margin-top: 10px;
 }
 
+.emoji-header {
+    width: 100%;
+    padding: 0px 10px 10px;
+}
+
+.emoji-content-container {
+    display: flex;
+    flex-direction: row;
+}
+
 .emoji-nav-button {
     background-color: #eee;
     border: none;
     padding: 10px;
     cursor: pointer;
     border-radius: 8px;
+    height: 50%;
 }
 
 .emoji-content {

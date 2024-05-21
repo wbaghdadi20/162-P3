@@ -13,10 +13,13 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "canvas": "^2.11.2",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-handlebars": "^7.1.2",
     "express-session": "^1.18.0",
     "jimp": "^0.22.12",
+    "node-fetch": "^3.3.2",
+    "path": "^0.12.7",
     "uuid": "^9.0.1"
   }
 }

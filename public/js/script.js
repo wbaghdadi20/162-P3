@@ -9,6 +9,7 @@ console.log('started '); // Debugging log
     };
     let currentEmojiPage = 0;
     let totalEmojiPages = 0; // To be updated after fetching emojis
+    let currentSearchQuery = '';
 
     window.addEventListener('load', init);
 
@@ -16,10 +17,12 @@ console.log('started '); // Debugging log
         const emojiButton = qs('.emoji-button');
         const prevButton = qs('.emoji-container .emoji-nav-button:first-child');
         const nextButton = qs('.emoji-container .emoji-nav-button:last-child');
+        const searchInput = qs('.emoji-search');
 
         emojiButton.addEventListener('click', toggleEmojiPicker);
         prevButton.addEventListener('click', () => changeEmojiPage(-1));
         nextButton.addEventListener('click', () => changeEmojiPage(1));
+        searchInput.addEventListener('input', handleSearchInput);
 
         setupEmojiPicker();
 
@@ -59,7 +62,8 @@ console.log('started '); // Debugging log
     }
 
     function fetchEmojis(page) {
-        fetch(`/emojis?page=${page}`)
+        const url = `/emojis?page=${page}&search=${currentSearchQuery}`;
+        fetch(url)
             .then(response => response.json())
             .then(data => {
                 const emojis = data.emojis;
@@ -70,13 +74,13 @@ console.log('started '); // Debugging log
 
                 emojis.forEach(emoji => {
                     const button = document.createElement('button');
-                    button.innerText = emoji;
+                    button.innerText = emoji.character; // Change to `emoji.character` if the API returns a JSON object
                     button.classList.add('emoji');
                     button.addEventListener('click', (event) => {
                         event.preventDefault();
                         if (activeField) {
                             const field = qs(`[name="${activeField}"]`);
-                            insertAtCursor(field, emoji);
+                            insertAtCursor(field, emoji.character);
                             field.focus();
                         }
                     });
@@ -107,6 +111,12 @@ console.log('started '); // Debugging log
         } else {
             emojiPicker.style.display = 'none';
         }
+    }
+
+    function handleSearchInput(event) {
+        currentSearchQuery = event.target.value;
+        currentEmojiPage = 0;
+        fetchEmojis(currentEmojiPage);
     }
 
     function insertAtCursor(field, value) {
