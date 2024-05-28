@@ -5,11 +5,29 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const { createCanvas } = require('canvas');
+const sqlite = require('sqlite');
+const sqlite3 = require('sqlite3');
 require('dotenv').config();
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+
+// For passport.js
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 // Initialize Express app
 const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Initialize the database
+let db;
+async function initializeDB() {
+    db = await sqlite.open({ filename: 'microblog.db', driver: sqlite3.Database });
+    console.log('Database initialized.');
+}
+
+initializeDB().catch(err => {
+    console.error('Error initializing database:', err);
+});
 
 // Set up Handlebars as the view engine
 app.engine('handlebars', engine());
@@ -28,51 +46,90 @@ app.use(session({
     saveUninitialized: true
 }));
 
+// Initialize passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+
+passport.use(new GoogleStrategy({
+    clientID: CLIENT_ID,
+    clientSecret: CLIENT_SECRET,
+    callbackURL: `http://localhost:${PORT}/auth/google/callback`
+}, async (token, tokenSecret, profile, done) => {
+    const hashedGoogleId = profile.id;
+    let user = await db.get('SELECT * FROM users WHERE hashedGoogleId = ?', hashedGoogleId);
+
+    if (!user) {
+        // Create a new user with Google profile information
+        const newUser = {
+            username: profile.emails[0].value,
+            hashedGoogleId: hashedGoogleId,
+            avatar_url: profile.photos[0].value,
+            memberSince: new Date().toISOString()
+        };
+        await db.run(
+            'INSERT INTO users (username, hashedGoogleId, avatar_url, memberSince) VALUES (?, ?, ?, ?)',
+            [newUser.username, newUser.hashedGoogleId, newUser.avatar_url, newUser.memberSince]
+        );
+        user = await db.get('SELECT * FROM users WHERE hashedGoogleId = ?', hashedGoogleId);
+    }
+
+    return done(null, user);
+}));
+
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+    const user = await db.get('SELECT * FROM users WHERE id = ?', id);
+    done(null, user);
+});
+
+// Middleware to check if user is authenticated
+const isAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        return next();
+    } else {
+        res.redirect('/loginRegister');
+    }
+};
+
 // Register custom Handlebars helper
 const handlebars = require('handlebars');
-handlebars.registerHelper('ifCond', function(v1, v2, options) {
+handlebars.registerHelper('ifCond', function (v1, v2, options) {
     if (v1 === v2) {
         return options.fn(this);
     }
     return options.inverse(this);
 });
 
-handlebars.registerHelper('ifUserMatch', function(userUsername, postUsername, options) {
+handlebars.registerHelper('ifUserMatch', function (userUsername, postUsername, options) {
     if (userUsername === postUsername) {
         return options.fn(this);
     }
     return options.inverse(this);
 });
 
-handlebars.registerHelper('includes', function(array, value, options) {
+handlebars.registerHelper('includes', function (array, value, options) {
     if (array && array.includes(value)) {
         return options.fn(this);
     }
     return options.inverse(this);
 });
 
-// Middleware to check if user is authenticated
-const isAuthenticated = (req, res, next) => {
-    if (req.session.user && req.session.user.loggedIn) {
-        return next();
-    } else {
-        res.redirect('/login');
-    }
-};
-
-// Sample data for posts
-let posts = [];
-
-// Sample data for users
-let users = [];
-
 // Functions to manage users
-const addUser = (user) => {
-    users.push(user);
+const addUser = async (user) => {
+    await db.run(
+        'INSERT INTO users (username, hashedGoogleId, avatar_url, memberSince) VALUES (?, ?, ?, ?)',
+        [user.username, user.hashedGoogleId, user.avatar_url, user.memberSince]
+    );
 };
 
-const findUserByEmail = (email) => {
-    return users.find(user => user.email === email);
+const findUserByEmail = async (email) => {
+    return await db.get('SELECT * FROM users WHERE username = ?', email);
 };
 
 // Emoji storage
@@ -115,159 +172,78 @@ app.get('/emojis', async (req, res) => {
 });
 
 // Home page route
-app.get('/', (req, res) => {
-    // Sort posts by timestamp in descending order
-    const sortedPosts = posts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    console.log(`User data in session: ${JSON.stringify(req.session.user)}`);
+app.get('/', async (req, res) => {
+    const posts = await db.all('SELECT * FROM posts ORDER BY timestamp DESC');
+    console.log(`User data in session: ${JSON.stringify(req.session.passport?.user)}`);
 
     res.render('home', {
         title: 'Home',
-        user: req.session.user,
-        posts: sortedPosts,
+        user: req.user,
+        posts: posts,
         showNavBar: true,
         layout: 'main'
     });
 });
 
-// Login page route
-app.get('/login', (req, res) => {
+// Login/Register page route
+app.get('/loginRegister', (req, res) => {
     res.render('loginRegister', {
-        title: 'Login',
-        formType: 'Login',
-        isLogin: true,
+        title: 'Login/Register',
         showNavBar: false,
         layout: false
     });
 });
 
-// Register page route
-app.get('/register', (req, res) => {
-    res.render('loginRegister', {
-        title: 'Register',
-        formType: 'Register',
-        isLogin: false,
-        showNavBar: false,
-        layout: false
-    });
-});
+// Google OAuth routes
+app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-// Handle user registration
-app.post('/register', async (req, res) => {
-    const { firstName, lastName, email, password, confirmPassword } = req.body;
-
-    // Basic validation
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
-        return res.status(400).render('loginRegister', { formType: 'Register', isLogin: false, error: 'All fields are required.', showNavBar: false });
-    }
-    if (password !== confirmPassword) {
-        return res.status(400).render('loginRegister', { formType: 'Register', isLogin: false, error: 'Passwords do not match.', showNavBar: false });
-    }
-
-    try {
-        // Check if user already exists
-        const existingUser = findUserByEmail(email);
-        if (existingUser) {
-            return res.status(400).render('loginRegister', { formType: 'Register', isLogin: false, error: 'User already exists.', showNavBar: false });
-        }
-
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create a new user
-        const newUser = { 
-            id: uuidv4(),
-            firstName,
-            lastName,
-            username: `${firstName} ${lastName}`,
-            avatar_url: undefined,
-            memberSince: new Date().toLocaleString(),
-            email,
-            password: hashedPassword
-        };
-        console.log("New user created at: " + newUser.memberSince);
-        addUser(newUser);
-
-        // Redirect to login page
-        res.redirect('/login');
-    } catch (err) {
-        console.error(err);
-        res.status(500).render('loginRegister', { formType: 'Register', isLogin: false, error: 'Server error.', showNavBar: false });
-    }
-});
-
-// Handle user login
-app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-
-    // Basic validation
-    if (!email || !password) {
-        return res.status(400).render('loginRegister', { formType: 'Login', isLogin: true, error: 'All fields are required.', showNavBar: false });
-    }
-
-    try {
-        // Check if user exists
-        const user = findUserByEmail(email);
-        if (!user) {
-            return res.status(400).render('loginRegister', { formType: 'Login', isLogin: true, error: 'Invalid credentials.', showNavBar: false });
-        }
-
-        // Check password
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).render('loginRegister', { formType: 'Login', isLogin: true, error: 'Invalid credentials.', showNavBar: false });
-        }
-
-        // Set up session
+app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/loginRegister' }),
+    (req, res) => {
         req.session.user = {
-            id: user.id, 
-            loggedIn: true, 
-            firstName: user.firstName, 
-            lastName: user.lastName,
-            username: user.username,
-            createdAt: user.memberSince
+            id: req.user.id,
+            username: req.user.username,
+            createdAt: req.user.memberSince,
+            loggedIn: true
         };
-        console.log(`User logged in: ${JSON.stringify(req.session.user)}`);
         res.redirect('/');
-    } catch (err) {
-        console.error(err);
-        res.status(500).render('loginRegister', { formType: 'Login', isLogin: true, error: 'Server error.', showNavBar: false });
-    }
-});
+    });
 
 // Handle user logout
-app.get('/logout', (req, res) => {
-    req.session.destroy((err) => {
+app.get('/logout', (req, res, next) => {
+    req.logout((err) => {
         if (err) {
-            return res.status(500).send('Server error.');
+            return next(err);
         }
-        res.redirect('/');
+        res.redirect('/googleLogout');
     });
 });
 
 // Create a new post
-app.post('/posts', isAuthenticated, (req, res) => {
+app.post('/posts', isAuthenticated, async (req, res) => {
     const { title, content } = req.body;
     const newPost = {
-        id: uuidv4(),
         title,
         content,
-        username: `${req.session.user.firstName} ${req.session.user.lastName}`,
-        timestamp: new Date().toLocaleString(),
-        likes: 0,
-        likedBy: [] // Initialize likedBy array
+        username: req.user.username,
+        timestamp: new Date().toISOString(),
+        likes: 0
     };
-    posts.push(newPost);
+    await db.run(
+        'INSERT INTO posts (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)',
+        [newPost.title, newPost.content, newPost.username, newPost.timestamp, newPost.likes]
+    );
     res.redirect('/');
 });
 
 // Like a post
-app.post('/like/:id', isAuthenticated, (req, res) => {
+app.post('/like/:id', isAuthenticated, async (req, res) => {
     const postId = req.params.id;
-    const post = posts.find(p => p.id === postId);
-    const username = `${req.session.user.firstName} ${req.session.user.lastName}`;
+    const post = await db.get('SELECT * FROM posts WHERE id = ?', postId);
+    const username = req.user.username;
 
     if (post) {
-        const userIndex = post.likedBy.indexOf(req.session.user.username);
+        const likedBy = post.likedBy ? post.likedBy.split(',') : [];
+        const userIndex = likedBy.indexOf(username);
 
         if (post.username === username) {
             return res.redirect('/');
@@ -275,12 +251,11 @@ app.post('/like/:id', isAuthenticated, (req, res) => {
 
         if (userIndex === -1) {
             // User has not liked the post yet
-            post.likes++;
-            post.likedBy.push(req.session.user.username);
+            await db.run('UPDATE posts SET likes = likes + 1, likedBy = ? WHERE id = ?', [likedBy.concat(username).join(','), postId]);
         } else {
             // User has already liked the post, so unlike it
-            post.likes--;
-            post.likedBy.splice(userIndex, 1);
+            likedBy.splice(userIndex, 1);
+            await db.run('UPDATE posts SET likes = likes - 1, likedBy = ? WHERE id = ?', [likedBy.join(','), postId]);
         }
     }
 
@@ -288,18 +263,18 @@ app.post('/like/:id', isAuthenticated, (req, res) => {
 });
 
 // Delete a post
-app.post('/delete/:id', isAuthenticated, (req, res) => {
+app.post('/delete/:id', isAuthenticated, async (req, res) => {
     const postId = req.params.id;
-    const fullName = `${req.session.user.firstName} ${req.session.user.lastName}`;
-    console.log(`Attempting to delete post with ID: ${postId} by user: ${fullName}`);
-    posts = posts.filter(p => !(p.id === postId && p.username === fullName));
+    const username = req.user.username;
+    console.log(`Attempting to delete post with ID: ${postId} by user: ${username}`);
+    await db.run('DELETE FROM posts WHERE id = ? AND username = ?', [postId, username]);
     res.redirect('/');
 });
 
 // Get a single post by ID
-app.get('/post/:id', (req, res) => {
+app.get('/post/:id', async (req, res) => {
     const postId = req.params.id;
-    const post = posts.find(p => p.id === postId);
+    const post = await db.get('SELECT * FROM posts WHERE id = ?', postId);
 
     if (!post) {
         return res.redirect('/error');
@@ -308,7 +283,7 @@ app.get('/post/:id', (req, res) => {
     res.render('post', {
         title: post.title,
         post,
-        user: req.session.user,
+        user: req.user,
         showNavBar: true,
         layout: 'main'
     });
@@ -324,15 +299,15 @@ app.get('/error', (req, res) => {
 });
 
 // Profile route
-app.get('/profile', isAuthenticated, (req, res) => {
-    const fullName = `${req.session.user.firstName} ${req.session.user.lastName}`;
-    const userPosts = posts.filter(post => post.username === fullName);
+app.get('/profile', isAuthenticated, async (req, res) => {
+    const username = req.user.username;
+    const userPosts = await db.all('SELECT * FROM posts WHERE username = ?', username);
 
-    console.log(`User data for profile: ${JSON.stringify(req.session.user)}`);
+    console.log(`User data for profile: ${JSON.stringify(req.user)}`);
 
     res.render('profile', {
         title: 'Profile',
-        user: req.session.user,
+        user: req.user,
         userPosts: userPosts,
         showNavBar: true,
         layout: 'main'
@@ -370,8 +345,33 @@ app.get('/avatar/:username', (req, res) => {
     });
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000;
+// Temporary route for testing environment variables
+app.get('/test-env', (req, res) => {
+    res.send(`CLIENT_ID: ${process.env.CLIENT_ID}, CLIENT_SECRET: ${process.env.CLIENT_SECRET}`);
+});
+
+// Google OAuth routes
+app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/loginRegister' }),
+    (req, res) => {
+        req.session.user = {
+            id: req.user.id,
+            username: req.user.username,
+            createdAt: req.user.memberSince,
+            loggedIn: true
+        };
+        res.redirect('/');
+    });
+
+app.get('/googleLogout', (req, res) => {
+    res.render('googleLogout');
+});
+
+app.get('/logoutCallback', (req, res) => {
+    res.redirect('/');
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

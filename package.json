@@ -19,7 +19,11 @@
     "express-session": "^1.18.0",
     "jimp": "^0.22.12",
     "node-fetch": "^3.3.2",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
     "path": "^0.12.7",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
     "uuid": "^9.0.1"
   }
 }
