@@ -267,7 +267,11 @@ app.post('/registerUsername', isAuthenticated, async (req, res) => {
     // Check if username already exists
     const existingUser = await db.get('SELECT * FROM users WHERE selectedUsername = ?', username);
     if (existingUser) {
-        return res.status(400).render('registerUsername', { error: 'Username already taken.' });
+        return res.status(400).render('registerUsername', { 
+            error: 'Username already taken.' ,
+            showNavBar: false,
+            layout: false
+        });
     }
 
     // Update user with the chosen username
