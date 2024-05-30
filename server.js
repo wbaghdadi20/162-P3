@@ -29,6 +29,12 @@ initializeDB().catch(err => {
     console.error('Error initializing database:', err);
 });
 
+// Utility function to format dates
+function formatDate(date) {
+    const padZero = (num) => (num < 10 ? '0' + num : num);
+    return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())} ${padZero(date.getHours())}:${padZero(date.getMinutes())}:${padZero(date.getSeconds())}`;
+}
+
 // Set up Handlebars as the view engine
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
@@ -67,7 +73,7 @@ passport.use(new GoogleStrategy({
             username: profile.emails[0].value,
             hashedGoogleId: hashedGoogleId,
             avatar_url: profile.photos[0].value,
-            memberSince: new Date().toISOString()
+            memberSince: formatDate(new Date())
         };
         await db.run(
             'INSERT INTO users (username, hashedGoogleId, avatar_url, memberSince) VALUES (?, ?, ?, ?)',
@@ -173,13 +179,30 @@ app.get('/emojis', async (req, res) => {
 
 // Home page route
 app.get('/', async (req, res) => {
-    const posts = await db.all('SELECT * FROM posts ORDER BY timestamp DESC');
+    const sort = req.query.sort || 'newest';
+    let postsQuery;
+
+    switch (sort) {
+        case 'oldest':
+            postsQuery = 'SELECT * FROM posts ORDER BY timestamp ASC';
+            break;
+        case 'likes':
+            postsQuery = 'SELECT * FROM posts ORDER BY likes DESC';
+            break;
+        case 'newest':
+        default:
+            postsQuery = 'SELECT * FROM posts ORDER BY timestamp DESC';
+            break;
+    }
+
+    const posts = await db.all(postsQuery);
     console.log(`User data in session: ${JSON.stringify(req.session.passport?.user)}`);
 
     res.render('home', {
         title: 'Home',
         user: req.user,
         posts: posts,
+        sort: sort,
         showNavBar: true,
         layout: 'main'
     });
@@ -225,7 +248,7 @@ app.post('/posts', isAuthenticated, async (req, res) => {
         title,
         content,
         username: req.user.username,
-        timestamp: new Date().toISOString(),
+        timestamp: formatDate(new Date()),
         likes: 0
     };
     await db.run(
@@ -240,13 +263,14 @@ app.post('/like/:id', isAuthenticated, async (req, res) => {
     const postId = req.params.id;
     const post = await db.get('SELECT * FROM posts WHERE id = ?', postId);
     const username = req.user.username;
+    const sort = req.query.sort || 'newest';
 
     if (post) {
         const likedBy = post.likedBy ? post.likedBy.split(',') : [];
         const userIndex = likedBy.indexOf(username);
 
         if (post.username === username) {
-            return res.redirect('/');
+            return res.redirect(`/?sort=${sort}`);
         }
 
         if (userIndex === -1) {
@@ -259,16 +283,17 @@ app.post('/like/:id', isAuthenticated, async (req, res) => {
         }
     }
 
-    res.redirect('/');
+    res.redirect(`/?sort=${sort}`);
 });
 
 // Delete a post
 app.post('/delete/:id', isAuthenticated, async (req, res) => {
     const postId = req.params.id;
     const username = req.user.username;
+    const sort = req.query.sort || 'newest';
     console.log(`Attempting to delete post with ID: ${postId} by user: ${username}`);
     await db.run('DELETE FROM posts WHERE id = ? AND username = ?', [postId, username]);
-    res.redirect('/');
+    res.redirect(`/?sort=${sort}`);
 });
 
 // Get a single post by ID
