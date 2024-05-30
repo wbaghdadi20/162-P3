@@ -1,9 +1,9 @@
 <div class="container-profile">
     <div class="profile-header">
         <img src="/avatar/{{user.username}}" alt="{{user.username}}'s avatar" class="avatar-profile">
-        <h1>{{user.username}}'s Profile</h1>    
+        <h1>{{user.selectedUsername}}'s Profile</h1>    
     </div>
-    <p>Member since: {{user.createdAt}}</p>
+    <p>Member since: {{user.memberSince}}</p>
     <h3>Recent Posts:</h3>
     <div class="user-posts">
         {{#each userPosts}}

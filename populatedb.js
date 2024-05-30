@@ -30,13 +30,13 @@ async function initializeDB() {
 
     // Sample data - Replace these arrays with your own data
     const users = [
-        { username: 'user1', hashedGoogleId: 'hashedGoogleId1', avatar_url: '', memberSince: '2024-01-01 12:00:00' },
-        { username: 'user2', hashedGoogleId: 'hashedGoogleId2', avatar_url: '', memberSince: '2024-01-02 12:00:00' }
+        { username: 'user1@example.com', hashedGoogleId: 'hashedGoogleId1', avatar_url: '', memberSince: '2024-01-01 12:00:00', selectedUsername: 'UserOne' },
+        { username: 'user2@example.com', hashedGoogleId: 'hashedGoogleId2', avatar_url: '', memberSince: '2024-01-02 12:00:00', selectedUsername: 'UserTwo' }
     ];
 
     const posts = [
-        { title: 'First Post', content: 'This is the first post', username: 'user1', timestamp: '2024-01-01 12:30:00', likes: 0, likedBy: '' },
-        { title: 'Second Post', content: 'This is the second post', username: 'user2', timestamp: '2024-01-02 12:30:00', likes: 0, likedBy: '' }
+        { title: 'First Post', content: 'This is the first post', username: 'UserOne', timestamp: '2024-01-01 12:30:00', likes: 0, likedBy: '' },
+        { title: 'Second Post', content: 'This is the second post', username: 'UserTwo', timestamp: '2024-01-02 12:30:00', likes: 0, likedBy: '' }
     ];
 
     // Insert sample data into the database

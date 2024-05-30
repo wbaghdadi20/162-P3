@@ -184,14 +184,29 @@ app.get('/', async (req, res) => {
 
     switch (sort) {
         case 'oldest':
-            postsQuery = 'SELECT * FROM posts ORDER BY timestamp ASC';
+            postsQuery = `
+                SELECT posts.*, users.selectedUsername 
+                FROM posts 
+                JOIN users ON posts.username = users.username 
+                ORDER BY posts.timestamp ASC
+            `;
             break;
         case 'likes':
-            postsQuery = 'SELECT * FROM posts ORDER BY likes DESC';
+            postsQuery = `
+                SELECT posts.*, users.selectedUsername 
+                FROM posts 
+                JOIN users ON posts.username = users.username 
+                ORDER BY posts.likes DESC
+            `;
             break;
         case 'newest':
         default:
-            postsQuery = 'SELECT * FROM posts ORDER BY timestamp DESC';
+            postsQuery = `
+                SELECT posts.*, users.selectedUsername 
+                FROM posts 
+                JOIN users ON posts.username = users.username 
+                ORDER BY posts.timestamp DESC
+            `;
             break;
     }
 
@@ -207,6 +222,7 @@ app.get('/', async (req, res) => {
         layout: 'main'
     });
 });
+
 
 // Login/Register page route
 app.get('/loginRegister', (req, res) => {
@@ -361,48 +377,73 @@ app.get('/error', (req, res) => {
 // Profile route
 app.get('/profile', isAuthenticated, async (req, res) => {
     const username = req.user.username;
-    const userPosts = await db.all('SELECT * FROM posts WHERE username = ?', username);
+    const user = await db.get('SELECT * FROM users WHERE username = ?', username);
 
-    console.log(`User data for profile: ${JSON.stringify(req.user)}`);
+    const userPosts = await db.all(`
+        SELECT posts.*, users.selectedUsername 
+        FROM posts 
+        JOIN users ON posts.username = users.username 
+        WHERE posts.username = ?
+    `, username);
+
+    console.log(`User data for profile: ${JSON.stringify(user)}`);
 
     res.render('profile', {
         title: 'Profile',
-        user: req.user,
+        user: {
+            ...req.user,
+            selectedUsername: user.selectedUsername // Ensure selectedUsername is included
+        },
         userPosts: userPosts,
         showNavBar: true,
         layout: 'main'
     });
 });
 
+
 // Avatar generation endpoint
-app.get('/avatar/:username', (req, res) => {
+app.get('/avatar/:username', async (req, res) => {
     const { username } = req.params;
-    const firstLetter = username.charAt(0).toUpperCase();
-    const colors = ['#FFB6C1', '#ADD8E6', '#90EE90', '#FFA07A', '#20B2AA', '#87CEFA', '#778899', '#B0C4DE'];
-    const backgroundColor = colors[username.charCodeAt(0) % colors.length];
 
-    const canvas = createCanvas(200, 200);
-    const ctx = canvas.getContext('2d');
+    try {
+        // Fetch the user from the database
+        const user = await db.get('SELECT selectedUsername FROM users WHERE username = ?', username);
 
-    // Set background color
-    ctx.fillStyle = backgroundColor;
-    ctx.fillRect(0, 0, 200, 200);
+        if (!user || !user.selectedUsername) {
+            return res.status(404).send('User not found');
+        }
 
-    // Set text properties
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '128px Sans';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+        const selectedUsername = user.selectedUsername;
+        const firstLetter = selectedUsername.charAt(0).toUpperCase();
+        const colors = ['#FFB6C1', '#ADD8E6', '#90EE90', '#FFA07A', '#20B2AA', '#87CEFA', '#778899', '#B0C4DE'];
+        const backgroundColor = colors[selectedUsername.charCodeAt(0) % colors.length];
 
-    // Draw text
-    ctx.fillText(firstLetter, 100, 100);
+        const canvas = createCanvas(200, 200);
+        const ctx = canvas.getContext('2d');
 
-    // Send the image as a response
-    canvas.toBuffer((err, buffer) => {
-        if (err) throw err;
-        res.setHeader('Content-Type', 'image/png');
-        res.send(buffer);
-    });
+        // Set background color
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(0, 0, 200, 200);
+
+        // Set text properties
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '128px Sans';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Draw text
+        ctx.fillText(firstLetter, 100, 100);
+
+        // Send the image as a response
+        canvas.toBuffer((err, buffer) => {
+            if (err) throw err;
+            res.setHeader('Content-Type', 'image/png');
+            res.send(buffer);
+        });
+    } catch (error) {
+        console.error('Error generating avatar:', error);
+        res.status(500).send('Server error');
+    }
 });
 
 // Temporary route for testing environment variables
