@@ -228,8 +228,43 @@ app.get('/auth/google/callback', passport.authenticate('google', { failureRedire
             createdAt: req.user.memberSince,
             loggedIn: true
         };
-        res.redirect('/');
+        if (!req.user.selectedUsername) {
+            res.redirect('/registerUsername');
+        } else {
+            req.session.user.username = req.user.selectedUsername;
+            res.redirect('/');
+        }
     });
+
+app.get('/registerUsername', isAuthenticated, (req, res) => {
+    res.render('registerUsername', {
+        title: 'Register Username',
+        showNavBar: false,
+        layout: false
+    });
+});
+
+app.post('/registerUsername', isAuthenticated, async (req, res) => {
+    const { username } = req.body;
+    const userId = req.user.id;
+
+    // Check if username already exists
+    const existingUser = await db.get('SELECT * FROM users WHERE selectedUsername = ?', username);
+    if (existingUser) {
+        return res.status(400).render('registerUsername', { error: 'Username already taken.' });
+    }
+
+    // Update user with the chosen username
+    await db.run('UPDATE users SET selectedUsername = ? WHERE id = ?', [username, userId]);
+
+    // Update session user
+    req.user.selectedUsername = username;
+    //req.session.user.username = username;
+
+    res.redirect('/');
+});
+
+
 
 // Handle user logout
 app.get('/logout', (req, res, next) => {

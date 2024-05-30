@@ -13,7 +13,8 @@ async function initializeDB() {
             username TEXT NOT NULL UNIQUE,
             hashedGoogleId TEXT NOT NULL UNIQUE,
             avatar_url TEXT,
-            memberSince DATETIME NOT NULL
+            memberSince DATETIME NOT NULL,
+            selectedUsername TEXT
         );
 
         CREATE TABLE IF NOT EXISTS posts (
@@ -41,8 +42,8 @@ async function initializeDB() {
     // Insert sample data into the database
     await Promise.all(users.map(user => {
         return db.run(
-            'INSERT INTO users (username, hashedGoogleId, avatar_url, memberSince) VALUES (?, ?, ?, ?)',
-            [user.username, user.hashedGoogleId, user.avatar_url, user.memberSince]
+            'INSERT INTO users (username, hashedGoogleId, avatar_url, memberSince, selectedUsername) VALUES (?, ?, ?, ?, ?)',
+            [user.username, user.hashedGoogleId, user.avatar_url, user.memberSince, user.selectedUsername]
         );
     }));
 
