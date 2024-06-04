@@ -580,7 +580,16 @@ app.get('/following', isAuthenticated, async (req, res) => {
 
     let posts = [];
     if (following.length > 0) {
-        posts = await db.all(`SELECT * FROM posts WHERE username IN (${following.map(() => '?').join(',')}) ORDER BY timestamp DESC`, following);
+        // Modified SQL query to join with the users table to get selectedUsername
+        const placeholders = following.map(() => '?').join(',');
+        const postsQuery = `
+            SELECT posts.*, users.selectedUsername 
+            FROM posts 
+            JOIN users ON posts.username = users.username 
+            WHERE posts.username IN (${placeholders}) 
+            ORDER BY posts.timestamp DESC
+        `;
+        posts = await db.all(postsQuery, following);
     }
 
     res.render('home', {
@@ -592,9 +601,6 @@ app.get('/following', isAuthenticated, async (req, res) => {
         followingView: true
     });
 });
-
-
-
 
 
 app.listen(PORT, () => {

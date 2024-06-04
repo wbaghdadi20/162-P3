@@ -1,5 +1,13 @@
 <div class="container-homepage">
     <h1 class="homepage-title">Welcome to BLOG IT</h1>
+
+    {{#if user}}
+        <p>
+            <a href="/" class="{{#if followingView}}no-underline{{else}}underline{{/if}}">REGULAR VIEW</a> | 
+            <a href="/following" class="{{#if followingView}}underline{{else}}no-underline{{/if}}">FOLLOWING</a>
+        </p>
+    {{/if}}
+
     
     {{#unless user}}
     <span>
@@ -19,13 +27,7 @@
                     <option value="likes" {{#ifCond sort 'likes'}}selected{{/ifCond}}>Likes</option>
                 </select>
             </div>
-            {{#if user}}
-                {{#if followingView}}
-                    <a href="/" ><button>REGULAR VIEW</button></a>
-                {{else}}
-                    <a href="/following"   ><button>FOLLOWING</button></a>
-                {{/if}}
-            {{/if}}
+
             {{#each posts}}
             {{> post post=this user=../user}}
             {{/each}}
