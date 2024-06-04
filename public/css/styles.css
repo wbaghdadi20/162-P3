@@ -670,3 +670,29 @@ button {
     background-color: #ddd;
     color: black;
 }
+
+
+.follow-button,
+.unfollow-button{
+    padding: 8px 16px;
+    margin: 5px;
+    background-color: #32d6aa;
+    color: rgb(0, 0, 0);
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 15px;
+}
+
+.unfollow-button {
+    background-color: #dc3545;
+}
+
+.follow-button:hover{
+    background-color: #00af81;
+}
+
+.unfollow-button:hover {
+    background-color: #d50b1f;
+}
+

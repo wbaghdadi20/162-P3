@@ -129,6 +129,24 @@ handlebars.registerHelper('includes', function (array, value, options) {
     return options.inverse(this);
 });
 
+// Register custom Handlebars helper for 'ne' (not equal)
+handlebars.registerHelper('ne', function (v1, v2) {
+    return v1 !== v2;
+});
+
+// Register custom Handlebars helper for 'includes' (checking if an array includes a value)
+handlebars.registerHelper('includes', function (array, value) {
+    if (array && array.includes(value)) {
+        return true;
+    }
+        return false;
+});
+
+
+
+
+
+
 // Functions to manage users
 const addUser = async (user) => {
     await db.run(
@@ -222,7 +240,8 @@ app.get('/', async (req, res) => {
         posts: posts,
         sort: sort,
         showNavBar: true,
-        layout: 'main'
+        layout: 'main',
+        followingView: false 
     });
 });
 
@@ -514,6 +533,69 @@ app.get('/googleLogout', (req, res) => {
 app.get('/logoutCallback', (req, res) => {
     res.redirect('/');
 });
+
+//follow and unfollow 
+// Follow a user
+app.post('/follow/:username', isAuthenticated, async (req, res) => {
+    const followUsername = req.params.username;
+    const currentUser = req.user.username;
+
+    // Get the current user's following list
+    const user = await db.get('SELECT * FROM users WHERE username = ?', currentUser);
+    let following = user.following ? user.following.split(',') : [];
+
+    if (!following.includes(followUsername)) {
+        following.push(followUsername);
+        await db.run('UPDATE users SET following = ? WHERE username = ?', [following.join(','), currentUser]);
+    }
+
+    res.redirect('/');
+});
+
+// Unfollow a user
+app.post('/unfollow/:username', isAuthenticated, async (req, res) => {
+    const unfollowUsername = req.params.username;
+    const currentUser = req.user.username;
+    
+    console.log(`Attempting to unfollow user: ${unfollowUsername} by ${currentUser}`);
+
+    // Get the current user's following list
+    const user = await db.get('SELECT * FROM users WHERE username = ?', currentUser);
+    let following = user.following ? user.following.split(',') : [];
+
+    following = following.filter(username => username !== unfollowUsername);
+    await db.run('UPDATE users SET following = ? WHERE username = ?', [following.join(','), currentUser]);
+
+    res.redirect('/');
+});
+
+
+app.get('/following', isAuthenticated, async (req, res) => {
+    const currentUser = req.user.username;
+    console.log(`Following for: ${currentUser}`);
+
+    // Get the current user's following list
+    const user = await db.get('SELECT * FROM users WHERE username = ?', currentUser);
+    const following = user.following ? user.following.split(',') : [];
+
+    let posts = [];
+    if (following.length > 0) {
+        posts = await db.all(`SELECT * FROM posts WHERE username IN (${following.map(() => '?').join(',')}) ORDER BY timestamp DESC`, following);
+    }
+
+    res.render('home', {
+        title: 'Following',
+        user: req.user,
+        posts: posts,
+        showNavBar: true,
+        layout: 'main',
+        followingView: true
+    });
+});
+
+
+
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

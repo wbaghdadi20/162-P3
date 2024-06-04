@@ -22,6 +22,21 @@
                 <button type="submit" class="delete-button">Delete</button>
             </form>
             {{/ifUserMatch}}
+
+            {{#if user}}
+                {{!-- Show follow/unfollow button for posts not belonging to the logged-in user --}}
+                {{#if (ne user.username username)}}
+                    {{#if (includes user.following username)}}
+                        <form action="/unfollow/{{username}}" method="POST">
+                            <button type="submit" class="unfollow-button">Unfollow</button>
+                        </form>
+                    {{else}}
+                        <form action="/follow/{{username}}" method="POST">
+                            <button type="submit" class="follow-button">Follow</button>
+                        </form>
+                    {{/if}}
+                {{/if}}
+            {{/if}}
         </div>
     </div>
 </div>

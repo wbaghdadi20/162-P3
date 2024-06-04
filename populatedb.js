@@ -14,7 +14,8 @@ async function initializeDB() {
             hashedGoogleId TEXT NOT NULL UNIQUE,
             avatar_url TEXT,
             memberSince DATETIME NOT NULL,
-            selectedUsername TEXT
+            selectedUsername TEXT,
+            following TEXT
         );
 
         CREATE TABLE IF NOT EXISTS posts (

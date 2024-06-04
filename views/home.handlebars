@@ -9,6 +9,7 @@
     {{/unless}}
 
     <div class="homepage-content">
+        
         <div class="posts-list">
             <div class="sorting-dropdown">
                 <label for="sort-posts">Sort by:</label>
@@ -18,10 +19,18 @@
                     <option value="likes" {{#ifCond sort 'likes'}}selected{{/ifCond}}>Likes</option>
                 </select>
             </div>
+            {{#if user}}
+                {{#if followingView}}
+                    <a href="/" ><button>REGULAR VIEW</button></a>
+                {{else}}
+                    <a href="/following"   ><button>FOLLOWING</button></a>
+                {{/if}}
+            {{/if}}
             {{#each posts}}
             {{> post post=this user=../user}}
             {{/each}}
         </div>
+        
 
         {{#if user}}
         <div class="post-form">
