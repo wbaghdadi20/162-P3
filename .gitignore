@@ -1,2 +1,4 @@
 node_modules/
 .env
+microblog.db
+162-p3-part3.bundle
