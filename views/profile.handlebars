@@ -3,6 +3,13 @@
         <img src="/avatar/{{user.username}}" alt="{{user.username}}'s avatar" class="avatar-profile">
         <h1>{{user.selectedUsername}}'s Profile</h1>    
     </div>
+
+    <div class ="profile-header2">
+        <a href="/registerUsername"><button class="change-username-button ">Change Username</button></a>
+        <button id="deleteAccountBtn" class="delete-account-button">Delete Account</button>
+
+    </div>
+    
     <p>Member since: {{user.memberSince}}</p>
     <h3>Recent Posts:</h3>
     <div class="user-posts">
@@ -10,4 +17,69 @@
         {{> post post=this user=../user}}
         {{/each}}
     </div>
+    
 </div>
+
+<!-- Modal for delete confirmation -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <span id = "x-button" class="close">&times;</span>
+        <p>Are you sure you want to delete your account?</p>
+        <button id="confirmDeleteBtn" class="confirm-delete-button">Yes</button>
+        <button id="cancelDeleteBtn" class="cancel-delete-button">No</button>
+        <input type="hidden" id="username" value="{{user.username}}">
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('DOM fully loaded and parsed');
+
+        document.getElementById('deleteAccountBtn').onclick = function () {
+            console.log('Delete account button clicked');
+            document.getElementById('deleteModal').style.display = 'block';
+        };
+
+        document.getElementById('cancelDeleteBtn').onclick = function () {
+            console.log('Cancel delete button clicked');
+            document.getElementById('deleteModal').style.display = 'none';
+        };
+
+        document.getElementById('confirmDeleteBtn').onclick = function () {
+            //const username = document.getElementById('username').value; // Get the username from the hidden input
+            const username = '{{user.username}}'; // Capture the username
+            console.log('Deleting user: ', username); // Debugging step
+
+            if (username) {
+                // Send a request to delete the account
+                fetch('/deleteAccount', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: username }) // Pass the correct username
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.href = '/loginRegister';
+                    } else {
+                        alert('Error deleting account.');
+                    }
+                });
+            } else {
+                console.error('Username is not defined.');
+            }
+        };
+
+        // Close the modal when the user clicks the close button (x)
+        document.getElementById('x-button').onclick = function () {
+            document.getElementById('deleteModal').style.display = 'none';
+        };
+
+        // Close the modal when the user clicks outside of it
+        window.onclick = function (event) {
+            if (event.target == document.getElementById('deleteModal')) {
+                document.getElementById('deleteModal').style.display = 'none';
+            }
+        };
+    });
+</script>

@@ -10,6 +10,7 @@ const sqlite3 = require('sqlite3');
 require('dotenv').config();
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
+
 // For passport.js
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
@@ -44,6 +45,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Middleware for parsing request bodies
 app.use(express.urlencoded({ extended: false }));
+
+app.use(express.json()); // Built-in middleware for parsing JSON
 
 // Set up session management
 app.use(session({
@@ -294,6 +297,41 @@ app.get('/logout', (req, res, next) => {
         }
         res.redirect('/googleLogout');
     });
+});
+
+
+app.post('/deleteAccount', async (req, res) => {
+    console.log('Request body:', req.body); // Log the entire request body
+    const username = req.body.username;
+    console.log(`Attempting to delete account for user: ${username}`);
+
+    if (!username) {
+        console.error('Username not provided');
+        return res.status(400).json({ error: 'Username not provided' });
+    }
+
+    try {
+        // Delete posts related to the user
+        const deletePostsResult = await db.run('DELETE FROM posts WHERE username = ?', username);
+        console.log(`Deleted posts for user: ${username}, affected rows: ${deletePostsResult.changes}`);
+
+        // Delete the user from the users table
+        const deleteUserResult = await db.run('DELETE FROM users WHERE username = ?', username);
+        console.log(`Deleted user: ${username}, affected rows: ${deleteUserResult.changes}`);
+
+        // Destroy the session
+        req.session.destroy(err => {
+            if (err) {
+                console.error('Failed to destroy session:', err);
+                return res.status(500).json({ error: 'Failed to destroy session' });
+            }
+            console.log('Session destroyed');
+            res.status(200).json({ success: true });
+        });
+    } catch (err) {
+        console.error('Error deleting account:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 
 // Create a new post
