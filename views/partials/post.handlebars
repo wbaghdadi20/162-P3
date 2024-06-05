@@ -13,12 +13,16 @@
         <div class="button-container">
             {{!-- Show like button for all posts --}}
             <form action="/like/{{id}}" method="POST">
+                <input type="hidden" name="sort" value="{{sort}}">
+                <input type="hidden" name="followingView" value="{{followingView}}">
                 <button type="submit" class="like-button">Likes {{likes}}</button>
             </form>
 
             {{!-- Show delete button if the post belongs to the logged-in user --}}
             {{#ifUserMatch user.username username}}
             <form action="/delete/{{id}}" method="POST">
+                <input type="hidden" name="sort" value="{{sort}}">
+                <input type="hidden" name="followingView" value="{{followingView}}">
                 <button type="submit" class="delete-button">Delete</button>
             </form>
             {{/ifUserMatch}}
@@ -28,10 +32,14 @@
                 {{#if (ne user.username username)}}
                     {{#if (includes user.following username)}}
                         <form action="/unfollow/{{username}}" method="POST">
+                            <input type="hidden" name="sort" value="{{sort}}">
+                            <input type="hidden" name="followingView" value="{{followingView}}">
                             <button type="submit" class="unfollow-button">Unfollow</button>
                         </form>
                     {{else}}
                         <form action="/follow/{{username}}" method="POST">
+                            <input type="hidden" name="sort" value="{{sort}}">
+                            <input type="hidden" name="followingView" value="{{followingView}}">
                             <button type="submit" class="follow-button">Follow</button>
                         </form>
                     {{/if}}

@@ -159,6 +159,38 @@ const findUserByEmail = async (email) => {
     return await db.get('SELECT * FROM users WHERE username = ?', email);
 };
 
+const getSortedPostsQuery = (sort) => {
+    let postsQuery;
+    switch (sort) {
+        case 'oldest':
+            postsQuery = `
+                SELECT posts.*, users.selectedUsername 
+                FROM posts 
+                JOIN users ON posts.username = users.username 
+                ORDER BY posts.timestamp ASC
+            `;
+            break;
+        case 'likes':
+            postsQuery = `
+                SELECT posts.*, users.selectedUsername 
+                FROM posts 
+                JOIN users ON posts.username = users.username 
+                ORDER BY posts.likes DESC
+            `;
+            break;
+        case 'newest':
+        default:
+            postsQuery = `
+                SELECT posts.*, users.selectedUsername 
+                FROM posts 
+                JOIN users ON posts.username = users.username 
+                ORDER BY posts.timestamp DESC
+            `;
+            break;
+    }
+    return postsQuery;
+};
+
 // Emoji storage
 let emojiPages = [];
 let prevSearchQuery = '';
@@ -201,35 +233,7 @@ app.get('/emojis', async (req, res) => {
 // Home page route
 app.get('/', async (req, res) => {
     const sort = req.query.sort || 'newest';
-    let postsQuery;
-
-    switch (sort) {
-        case 'oldest':
-            postsQuery = `
-                SELECT posts.*, users.selectedUsername 
-                FROM posts 
-                JOIN users ON posts.username = users.username 
-                ORDER BY posts.timestamp ASC
-            `;
-            break;
-        case 'likes':
-            postsQuery = `
-                SELECT posts.*, users.selectedUsername 
-                FROM posts 
-                JOIN users ON posts.username = users.username 
-                ORDER BY posts.likes DESC
-            `;
-            break;
-        case 'newest':
-        default:
-            postsQuery = `
-                SELECT posts.*, users.selectedUsername 
-                FROM posts 
-                JOIN users ON posts.username = users.username 
-                ORDER BY posts.timestamp DESC
-            `;
-            break;
-    }
+    const postsQuery = getSortedPostsQuery(sort);
 
     const posts = await db.all(postsQuery);
     console.log(`User data in session: ${JSON.stringify(req.session.passport?.user)}`);
@@ -241,7 +245,7 @@ app.get('/', async (req, res) => {
         sort: sort,
         showNavBar: true,
         layout: 'main',
-        followingView: false 
+        followingView: false
     });
 });
 
@@ -375,14 +379,16 @@ app.post('/like/:id', isAuthenticated, async (req, res) => {
     const postId = req.params.id;
     const post = await db.get('SELECT * FROM posts WHERE id = ?', postId);
     const username = req.user.username;
-    const sort = req.query.sort || 'newest';
+    const sort = req.body.sort || 'newest';
+    const followingView = req.body.followingView === 'true';
+    console.log(followingView)
 
     if (post) {
         const likedBy = post.likedBy ? post.likedBy.split(',') : [];
         const userIndex = likedBy.indexOf(username);
 
         if (post.username === username) {
-            return res.redirect(`/?sort=${sort}`);
+            return res.redirect(`${followingView ? '/following' : '/'}?sort=${sort}`);
         }
 
         if (userIndex === -1) {
@@ -395,17 +401,18 @@ app.post('/like/:id', isAuthenticated, async (req, res) => {
         }
     }
 
-    res.redirect(`/?sort=${sort}`);
+    res.redirect(`${followingView ? '/following' : '/'}?sort=${sort}`);
 });
 
 // Delete a post
 app.post('/delete/:id', isAuthenticated, async (req, res) => {
     const postId = req.params.id;
     const username = req.user.username;
-    const sort = req.query.sort || 'newest';
+    const sort = req.body.sort || 'newest';
+    const followingView = req.body.followingView === 'true';
     console.log(`Attempting to delete post with ID: ${postId} by user: ${username}`);
     await db.run('DELETE FROM posts WHERE id = ? AND username = ?', [postId, username]);
-    res.redirect(`/?sort=${sort}`);
+    res.redirect(`${followingView ? '/following' : '/'}?sort=${sort}`);
 });
 
 // Get a single post by ID
@@ -534,11 +541,12 @@ app.get('/logoutCallback', (req, res) => {
     res.redirect('/');
 });
 
-//follow and unfollow 
 // Follow a user
 app.post('/follow/:username', isAuthenticated, async (req, res) => {
     const followUsername = req.params.username;
     const currentUser = req.user.username;
+    const sort = req.body.sort || 'newest';
+    const followingView = req.body.followingView === 'true';
 
     // Get the current user's following list
     const user = await db.get('SELECT * FROM users WHERE username = ?', currentUser);
@@ -549,14 +557,16 @@ app.post('/follow/:username', isAuthenticated, async (req, res) => {
         await db.run('UPDATE users SET following = ? WHERE username = ?', [following.join(','), currentUser]);
     }
 
-    res.redirect('/');
+    res.redirect(`${followingView ? '/following' : '/'}?sort=${sort}`);
 });
 
 // Unfollow a user
 app.post('/unfollow/:username', isAuthenticated, async (req, res) => {
     const unfollowUsername = req.params.username;
     const currentUser = req.user.username;
-    
+    const sort = req.body.sort || 'newest';
+    const followingView = req.body.followingView === 'true';
+
     console.log(`Attempting to unfollow user: ${unfollowUsername} by ${currentUser}`);
 
     // Get the current user's following list
@@ -566,7 +576,7 @@ app.post('/unfollow/:username', isAuthenticated, async (req, res) => {
     following = following.filter(username => username !== unfollowUsername);
     await db.run('UPDATE users SET following = ? WHERE username = ?', [following.join(','), currentUser]);
 
-    res.redirect('/');
+    res.redirect(`${followingView ? '/following' : '/'}?sort=${sort}`);
 });
 
 
@@ -574,6 +584,8 @@ app.get('/following', isAuthenticated, async (req, res) => {
     const currentUser = req.user.username;
     console.log(`Following for: ${currentUser}`);
 
+    const sort = req.query.sort || 'newest';
+    
     // Get the current user's following list
     const user = await db.get('SELECT * FROM users WHERE username = ?', currentUser);
     const following = user.following ? user.following.split(',') : [];
@@ -587,7 +599,7 @@ app.get('/following', isAuthenticated, async (req, res) => {
             FROM posts 
             JOIN users ON posts.username = users.username 
             WHERE posts.username IN (${placeholders}) 
-            ORDER BY posts.timestamp DESC
+            ORDER BY ${sort === 'oldest' ? 'posts.timestamp ASC' : sort === 'likes' ? 'posts.likes DESC' : 'posts.timestamp DESC'}
         `;
         posts = await db.all(postsQuery, following);
     }
@@ -596,12 +608,12 @@ app.get('/following', isAuthenticated, async (req, res) => {
         title: 'Following',
         user: req.user,
         posts: posts,
+        sort: sort,
         showNavBar: true,
         layout: 'main',
         followingView: true
     });
 });
-
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

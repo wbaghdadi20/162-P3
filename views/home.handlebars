@@ -3,12 +3,11 @@
 
     {{#if user}}
         <p>
-            <a href="/" class="{{#if followingView}}no-underline{{else}}underline{{/if}}">REGULAR VIEW</a> | 
+            <a href="/" class="{{#if followingView}}no-underline{{else}}underline{{/if}}">REGULAR VIEW</a> <strong>|</strong> 
             <a href="/following" class="{{#if followingView}}underline{{else}}no-underline{{/if}}">FOLLOWING</a>
         </p>
     {{/if}}
 
-    
     {{#unless user}}
     <span>
         <p><a href="/loginRegister">SIGN IN</a> to post!</p>
@@ -17,7 +16,6 @@
     {{/unless}}
 
     <div class="homepage-content">
-        
         <div class="posts-list">
             <div class="sorting-dropdown">
                 <label for="sort-posts">Sort by:</label>
@@ -29,10 +27,9 @@
             </div>
 
             {{#each posts}}
-            {{> post post=this user=../user}}
+                {{> post post=this user=../user sort=../sort followingView=../followingView}}
             {{/each}}
         </div>
-        
 
         {{#if user}}
         <div class="post-form">
@@ -60,6 +57,8 @@
 <script>
     function sortPosts() {
         const sortValue = document.getElementById('sort-posts').value;
-        window.location.href = `/?sort=${sortValue}`;
+        const followingView = {{#if followingView}}true{{else}}false{{/if}};
+        const redirectUrl = followingView ? `/following?sort=${sortValue}` : `/?sort=${sortValue}`;
+        window.location.href = redirectUrl;
     }
 </script>
