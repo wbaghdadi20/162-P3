@@ -1,22 +1,23 @@
 <div class="container-profile">
     <div class="profile-header">
-        <img src="/avatar/{{user.username}}" alt="{{user.username}}'s avatar" class="avatar-profile">
-        <h1>{{user.selectedUsername}}'s Profile</h1>    
+        <img src="/avatar/{{profileUser.username}}" alt="{{profileUser.username}}'s avatar" class="avatar-profile">
+        <h1>{{profileUser.selectedUsername}}'s Profile</h1>    
     </div>
 
+    {{#if isOwnProfile}}
     <div class ="profile-header2">
-        <a href="/registerUsername"><button class="change-username-button ">Change Username</button></a>
+        <a href="/registerUsername"><button class="change-username-button">Change Username</button></a>
         <button id="deleteAccountBtn" class="delete-account-button">Delete Account</button>
     </div>
+    {{/if}}
     
-    <p>Member since: {{user.memberSince}}</p>
+    <p>Member since: {{profileUser.memberSince}}</p>
     <h3>Recent Posts:</h3>
     <div class="user-posts">
         {{#each userPosts}}
-        {{> post post=this user=../user}}
+        {{> post post=this user=../loggedInUser}}
         {{/each}}
     </div>
-    
 </div>
 
 <!-- Modal for delete confirmation -->

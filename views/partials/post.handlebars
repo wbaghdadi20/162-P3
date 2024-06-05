@@ -1,6 +1,8 @@
 <div class="post">
     <div class="post-header">
-        <img src="/avatar/{{username}}" alt="{{username}}'s avatar" class="avatar">
+        <a href="/profile?username={{username}}">
+            <img src="/avatar/{{username}}" alt="{{username}}'s avatar" class="avatar">
+        </a>
         <h2 style="margin-right: 50px;">{{title}}</h2>
         <span class="post-author">by {{selectedUsername}}</span>
     </div>
@@ -11,14 +13,12 @@
     <div class="post-footer">
         <span class="post-timestamp">{{timestamp}}</span>
         <div class="button-container">
-            {{!-- Show like button for all posts --}}
             <form action="/like/{{id}}" method="POST">
                 <input type="hidden" name="sort" value="{{sort}}">
                 <input type="hidden" name="followingView" value="{{followingView}}">
                 <button type="submit" class="like-button">Likes {{likes}}</button>
             </form>
 
-            {{!-- Show delete button if the post belongs to the logged-in user --}}
             {{#ifUserMatch user.username username}}
             <form action="/delete/{{id}}" method="POST">
                 <input type="hidden" name="sort" value="{{sort}}">
@@ -28,7 +28,6 @@
             {{/ifUserMatch}}
 
             {{#if user}}
-                {{!-- Show follow/unfollow button for posts not belonging to the logged-in user --}}
                 {{#if (ne user.username username)}}
                     {{#if (includes user.following username)}}
                         <form action="/unfollow/{{username}}" method="POST">

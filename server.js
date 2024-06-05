@@ -444,8 +444,15 @@ app.get('/error', (req, res) => {
 
 // Profile route
 app.get('/profile', isAuthenticated, async (req, res) => {
-    const username = req.user.username;
+    const queryUsername = req.query.username;
+    const loggedInUsername = req.user.username;
+    const username = queryUsername || loggedInUsername;
+    const isOwnProfile = username === loggedInUsername;
+
     const user = await db.get('SELECT * FROM users WHERE username = ?', username);
+    if (!user) {
+        return res.redirect('/error');
+    }
 
     const userPosts = await db.all(`
         SELECT posts.*, users.selectedUsername 
@@ -454,20 +461,17 @@ app.get('/profile', isAuthenticated, async (req, res) => {
         WHERE posts.username = ?
     `, username);
 
-    console.log(`User data for profile: ${JSON.stringify(user)}`);
-
     res.render('profile', {
-        title: 'Profile',
-        user: {
-            ...req.user,
-            selectedUsername: user.selectedUsername // Ensure selectedUsername is included
-        },
+        title: `${user.selectedUsername}'s Profile`,
+        user: req.user,
+        loggedInUser: req.user, // Information of the logged-in user
+        profileUser: user, // Information of the profile being viewed
         userPosts: userPosts,
         showNavBar: true,
-        layout: 'main'
+        layout: 'main',
+        isOwnProfile: isOwnProfile
     });
 });
-
 
 // Avatar generation endpoint
 app.get('/avatar/:username', async (req, res) => {

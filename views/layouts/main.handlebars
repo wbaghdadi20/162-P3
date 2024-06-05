@@ -19,7 +19,7 @@
                 <a href="/">Home</a>
                 {{#if user}}
                 <span class="username">{{user.selectedUsername}}</span>
-                <a href="/profile">Profile</a>
+                <a href="/profile?username={{loggedInUser.username}}">Profile</a>
                 <a href="/logout">Logout</a>
                 {{else}}
                 <a href="/loginRegister">Login/Register</a>
